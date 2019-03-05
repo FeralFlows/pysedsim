@@ -82,18 +82,20 @@ Upon opening the workbooks, you may be asked if you wish to enable macros. Click
 
 <strong> Peer-reviewed Publications: </strong>
 
-Wild, T.B., Loucks, D.P., Annandale, G.W., and Kaini, P. (2016). Maintaining Sediment Flows through Hydropower Dams in the Mekong River Basin. J. Water Resour. Plann. Manage, 142(1), 05015004.
-
-Wild, T.B. and Loucks, D.P. (2015). Mitigating Dam Conflicts in the Mekong River Basin. Chapter 2 in Conflict Resolution in Water Resources and Environmental Management, edited by K.W. Hipel et al., Springer (Heidelberg), pp. 25-48. 
-
-Wild, T.B. and Loucks, D.P. (2015). An Approach to Simulating Sediment Management in the Mekong River Basin. Chapter 12 in Sediment Matters, edited by P. Heininger and J. Cullman, Springer (Heidelberg), pp. 187-99.
-
-Wild, T.B. and Loucks, D.P. (2014). Managing Flow, Sediment and Hydropower Regimes in the Sre Pok, Se San and Se Kong Rivers of the Mekong Basin. Water Resour. Res., 50, 5141-57.
+Wild, T.B., Reed, P.M., Loucks, D.P., Mallen-Cooper, M., Jensen, E.D. (2018). Balancing Hydropower and Ecological Impacts in the Mekong: Tradeoffs for Sambor Mega Dam. J. Water Resour. Plann. Manage. DOI: 10.1061/(ASCE)WR.1943-5452.0001036.
 
 <strong> Presentations: </strong>
 
-Wild, T.B. and Loucks, D.P. (2014). Managing the Impacts of Reservoirs in the Mekong River Basin. In Proceedings of the ASCE World Environmental and Water Resources Congress 2014, Portland, OR, 1070-1080.
+Loucks, D.P., Wild, T.B., Reed, P.M (2018). Ecology-Energy Tradeoffs in the Lower Mekong. Oral presentation at International Symposium on Safety of Water Resources Engineering for Regulation of water Cycle in River Basin and Disaster Prevention and Mitigation, IWHR, Beijing, China, October 2018.
 
-Wild, T.B. and Loucks, D.P. (2013). Managing Sediment in the Mekong River Basin: Tradeoffs between Hydropower and the Environment. In Proceedings of the ASCE World Environmental and Water Resources Congress 2013, Cincinnati, OH, 1297-1307.
+Loucks, D.P., Wild, T.B., Reed, P.M (2018). Communicating complex hydropower-ecological tradeoffs and their uncertainties to decision makers: A hydroinformatics challenge in the Lower Mekong. Oral presentation at European Geosciences Union (EGU) General Assembly 2018, Vienna, Austria. 
 
-Wild, T.B. and Loucks, D.P. (2012). Assessing the Potential Sediment-Related Impacts of Hydropower Development in the Mekong River Basin. In Proceedings of the ASCE World Environmental and Water Resources Congress 2012, Albuquerque, NM, 2236-2246.
+Loucks, D.P., Wild, T.B., and Reed, P.M. (2017). Tradeoffs among Hydropower, Sediment Flow, and Fish Survival in the Lower Mekong: A Study of Sambor Dam. Hydropower Sustainability Forum: Mekong +, Multiconsult, Oslo, Norway, September 2017.
+
+Loucks, D.P., Wild, T.B., and Reed, P.M. (2017). Modeling and Managing Water in a Changing and Surprising World. Oral presentation at ASCE World Environmental and Water Resources Congress 2017, Sacramento, CA.
+
+Wild, T.B., Reed, P.M., and Loucks, D.P. (2016). Mega Dams on the Mekong: A Framework for Evaluating Alternative Dam Siting, Design and Operations Options to Improve Sediment and Migratory Fish Passage. Oral presentation at ASCE World Environmental and Water Resources Congress 2016, West Palm Beach, FL.
+
+Wild, T.B., Reed, P.M., and Loucks, D.P. (2015). Food-Energy Tradeoffs in the Mekong: Options for Improved Sediment and Fish Passage at Hydropower Dams. Oral presentation at ASCE World Environmental and Water Resources Congress 2015, Austin, TX.
+
+Loucks, D.P. and Wild, T.B. (2015). Managing Tradeoffs between Hydropower and the Environment in the Mekong River Basin. Oral presentation at European Geosciences Union (EGU) General Assembly 2015, Vienna, Austria.
