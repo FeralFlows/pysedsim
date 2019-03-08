@@ -1,6 +1,8 @@
 # PySedSim
 An Open Source Reservoir and Sediment Simulation Screening Framework for Identifying and Evaluating Dam Siting, Design, and Operation Alternatives
 
+![sedsim_worksheet](/images/pysedsim_logo.PNG)
+
 - [Contact Us](#Contact)
 - [Introduction](#Introduction)
 - [Getting Started](#InstallGuide)
@@ -22,9 +24,6 @@ PySedSim is an open-source, daily time step stochastic river basin simulation mo
 The source code is written in Python. PySedSim includes four core model features: 1) representing alternative reservoir sediment management approaches, 2) representing detailed dam design features (e.g., gates), 3) supporting emerging multi-objective optimization frameworks for discovering reservoir operating policies and their resulting tradeoffs, and 4) facilitating stochastic Monte Carlo simulation for characterizing uncertainty in hydrologic and sediment processes. The model strongly broadens the SDO design analytic capabilities of the sediment simulation SedSim model (Wild and Loucks 2015a; Wild et al., 2019)), while providing backward compatibility with its EXCEL-based interfacing for training of less advanced users. The model was developed at Cornell University, in partnership with the Natural Heritage Institute (NHI), as well as at the University of Maryland (College Park).
 
 # <a name="InstallGuide"></a>Getting Started
-
-![sedsim_worksheet](/images/Capture.PNG)
-
 
 # <a name="Pubs"></a>Publications using PySedSim
 
