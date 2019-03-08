@@ -1,7 +1,7 @@
 # PySedSim
 An Open Source Reservoir and Sediment Simulation Screening Framework for Identifying and Evaluating Dam Siting, Design, and Operation Alternatives
 
-![sedsim_worksheet](/images/pysedsim_logo.PNG)
+![sedsim_worksheet](/images/pysedsim_logo.png)
 
 - [Contact Us](#Contact)
 - [Introduction](#Introduction)
