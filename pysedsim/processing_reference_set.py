@@ -17,7 +17,7 @@ import matplotlib.cm as cm
 #matplotlib.use('Agg')
 from matplotlib import pyplot
 from mpl_toolkits.mplot3d import Axes3D
-import pylab as p
+#import pylab as p
 from matplotlib import rc, rcParams
 from movie_pareto_front import rotanimate
 import subprocess  # for calling Pareto.py command-line style
@@ -1432,7 +1432,7 @@ def Subplot_Scatter_Plot_Objectives(ref_set_pref_dict, objs_to_plot, parse_objs=
                 plt_order[1]] + ".png"
     elif num_objs_to_plot >= 3:
         if three_d_plot == 'Yes':
-            fig = p.figure()  # create the figure
+            fig = pyplot.figure()  # create the figure
         else:
             fig, ax_arr = axis_test
         if num_objs_to_plot == 3:
@@ -1671,7 +1671,7 @@ def Subplot_Scatter_Plot_Objectives(ref_set_pref_dict, objs_to_plot, parse_objs=
                     plt_order[1]] + '-' + objs_to_plot[plt_order[2]] + ".png"
         elif num_objs_to_plot == 4:
             if three_d_plot == 'Yes':
-                fig = p.figure()  # create the figure
+                fig = pyplot.figure()  # create the figure
             else:
                 fig, ax_arr = axis_test
             cmap = pyplot.cm.get_cmap("jet_r")
@@ -1979,7 +1979,7 @@ def Scatter_Plot_Objectives(ref_set_pref_dict, objs_to_plot, parse_objs=None, pl
             save_fig = save_fig + os_fold + objs_to_plot[plt_order[0]] + '-' + objs_to_plot[
                 plt_order[1]] + ".png"
     elif num_objs_to_plot >= 3:
-        fig = p.figure()  # create the figure
+        fig = pyplot.figure()  # create the figure
         if num_objs_to_plot == 3:
             # Create a 3D plot, with no color used to map a fourth objective.
             if plt_order is None:
@@ -2006,7 +2006,7 @@ def Scatter_Plot_Objectives(ref_set_pref_dict, objs_to_plot, parse_objs=None, pl
                     pyplot.ylim(ax_lim[plt_order[1]][0],ax_lim[plt_order[1]][1])
                 fig.colorbar(new_plot, shrink=0.75)
                 fig.axes[-1].set_ylabel(objs_to_plot[plt_order[2]], fontsize=18)
-            p.show()
+            pyplot.show()
             if save_fig is not None:
                 save_fig = save_fig + os_fold + objs_to_plot[plt_order[0]] + '-' + objs_to_plot[
                     plt_order[1]] + '-' + objs_to_plot[plt_order[2]] + ".png"
@@ -2143,7 +2143,7 @@ def Scatter_Plot_Objectives(ref_set_pref_dict, objs_to_plot, parse_objs=None, pl
         ax3D.scatter(best_obj_list[0], best_obj_list[1], best_obj_list[2], marker="*", s=50, color='darkblue',
                      edgecolor='darkblue')
     ax3D.grid(False)
-    p.show()
+    pyplot.show()
 
     fig.set_size_inches(4,4)
     #fig.tight_layout()
