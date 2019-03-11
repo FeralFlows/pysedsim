@@ -1,7 +1,7 @@
 """
 @author   Thomas B. Wild
 @email:   twild@umd.edu or tombernardwild@gmail.com
-@Project: pysedsim 1.0.1
+@Project: pysedsim 1.0.0
 
 License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 """
@@ -31,7 +31,7 @@ def get_requirements():
 
 setup(
     name='pysedsim',
-    version='1.0.1',
+    version='1.0.0',
     packages=find_packages(),
     url='https://github.com/FeralFlows/pysedsim',
     license='BSD 2-Clause',
