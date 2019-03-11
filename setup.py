@@ -1,7 +1,7 @@
 """
 @author   Thomas B. Wild
-@email:   twild@umd.edu and tombernardwild@gmail.com
-@Project: PySedSim 1.0
+@email:   twild@umd.edu or tombernardwild@gmail.com
+@Project: pysedsim 1.0
 
 License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 """
@@ -30,15 +30,18 @@ def get_requirements():
 
 
 setup(
-    name='PySedSim',
+    name='pysedsim',
     version='1.0.0',
     packages=find_packages(),
-    url='https://github.com/FeralFlows/PySedSim',
+    url='https://github.com/FeralFlows/pysedsim',
     license='BSD 2-Clause',
     author='Thomas B. Wild; Abigail N. Birnbaum; Patrick M. Reed; Daniel P. Loucks',
-    author_email='twild@umd.edu; birnbaum.abigail@gmail.com; patrick.reed@cornell.edu; loucks@cornell.edu',
+    author_email='twild@umd.edu',
     description='An Open Source Reservoir and Sediment Simulation Screening Framework for Identifying and Evaluating Dam Siting, Design, and Operation Alternatives',
     long_description=readme(),
     install_requires=get_requirements(),
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, <4',
+    classifiers=[
+        "Programming Language :: Python :: 2",
+        "Operating System :: OS Independent"]
 )
