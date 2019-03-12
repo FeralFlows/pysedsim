@@ -19,7 +19,7 @@ from matplotlib import pyplot
 from mpl_toolkits.mplot3d import Axes3D
 #import pylab as p
 from matplotlib import rc, rcParams
-from movie_pareto_front import rotanimate
+#from movie_pareto_front import rotanimate
 import subprocess  # for calling Pareto.py command-line style
 import platform
 import os
