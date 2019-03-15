@@ -38,10 +38,10 @@ class Density_Current_Venting(Sediment_Res_Ops):
         if 'Density Current Venting' in Input_Data_File.sheetnames:
             [self.Min_venting_efficiency, self.Min_venting_stor_elev_target, self.Venting_downstream_max_conc,
              self.continue_venting_despite_max_exceedance, self.reservoir_bed_slope, self.reservoir_bottom_width,
-             self.minimum_power_during_venting] = data_processing.Excel_Data_Import(element_name, Input_Data_File,
-                                                                                    'Density Current Venting', 1, 7,
-                                                                                    max_distinct_data_types=None,
-                                                                                    data_name_offset=None)  # Optional
+             self.minimum_power_during_venting] = Excel_Data_Import(element_name, Input_Data_File,
+																	'Density Current Venting', 1, 7,
+																	max_distinct_data_types=None,
+																	data_name_offset=None)  # Optional
         else:
             self.error = 1
             print "Error: Sediment management of type %s does not have a corresponding and correctly named worksheet in the input file." \

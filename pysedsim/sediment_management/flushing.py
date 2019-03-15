@@ -73,9 +73,9 @@ class Flushing(Sediment_Res_Ops):
         self.Flushing_Drawdown_Willingness_To_Wait = 14  # reservoir will wait x days before refilling while drawn down for another reservoir in a flushing group to finish flushing; change so this is user-specified.
 
         if 'Flushing' in Input_Data_File.sheetnames:
-            self.Flushing_Data_Import = data_processing.Excel_Data_Import(element_name, Input_Data_File, 'Flushing', 2,
-                                                                          16, max_distinct_data_types=None,
-                                                                          data_name_offset=2)
+            self.Flushing_Data_Import = Excel_Data_Import(element_name, Input_Data_File, 'Flushing', 2,
+														  16, max_distinct_data_types=None,
+														  data_name_offset=2)
         else:
             self.error = 1
             print "Error: Sediment management of type %s does not have a corresponding and correctly named worksheet " \
