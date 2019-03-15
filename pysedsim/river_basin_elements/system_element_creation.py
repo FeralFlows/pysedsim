@@ -6,11 +6,11 @@ Module creates the network of system elements (reaches, reservoirs, and junction
 
 # Import relevant libraries
 from __future__ import division
-from reservoir import Reservoir
-from channel import Channel
-from channel import Diversion_Channel
-from junction import Junction
-from bypassing import Bypass_Structure
+from pysedsim.river_basin_elements.reservoir import Reservoir
+from pysedsim.river_basin_elements.channel import Channel
+from pysedsim.river_basin_elements.channel import Diversion_Channel
+from pysedsim.river_basin_elements.junction import Junction
+from pysedsim.river_basin_elements.bypassing import Bypass_Structure
 
 def Simulation_Network_Creation(Input_Data_File):
 

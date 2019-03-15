@@ -24,11 +24,11 @@ import subprocess  # for calling Pareto.py command-line style
 import platform
 import os
 import shutil  # for copying Pareto.py over to directory where seed outputs from optimization are located.
-from data_processing import Op_Sys_Folder_Operator
-from data_processing import Determine_Num_Scenarios
-import direct_policy_search
+from pysedsim.data_processing.date_processing import Op_Sys_Folder_Operator
+from pysedsim.data_processing.date_processing import Determine_Num_Scenarios
+import pysedsim.optimization.direct_policy_search
 import itertools
-from data_processing import Load_Input_File
+from pysedsim.data_processing.date_processing import Load_Input_File
 import matplotlib.patheffects as pe
 
 def Reference_Set(input_file_name = 'PySedSim_Input_Specifications.csv', ref_set_file_name = 'pysedsim_ref_set',

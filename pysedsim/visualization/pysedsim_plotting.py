@@ -16,7 +16,7 @@ from pylab import plot, show, hist, figure, title, suptitle, savefig
 import os  # allows export of csv file by joining intended file name with the destination folder's path.
 import pandas as pd
 import copy
-from data_processing import Op_Sys_Folder_Operator
+from pysedsim.data_processing.data_processing import Op_Sys_Folder_Operator
 
 def Single_Time_Series_Value_Plotting(Sims_to_Import, Input_DF, after_n_years, save_type = None, save_image_as = None, cum_in=0, normed_in=0):
     # after_n_years = list of number of years after which to grab values. must be integer number of years <= simulation duration. Providing more than one value includes them on the same plot.

@@ -12,9 +12,9 @@ the reservoir's water level.
 # import relevant libraries
 from __future__ import division  # This ensures result of quotient of two integers will be a float, not an integer. (e.g., 1/4 = 0.25, not 0)
 import numpy as np
-import data_processing
+import pysedsim.data_processing.data_processing
 import calendar  # Used to determine number of days in a given month
-from matrix_interpolation import Matrix_Interpolation
+from pysedsim.data_processing.matrix_interpolation import Matrix_Interpolation
 
 # Ideas:
 # Since the imports here (openpyxl modules) get executed every time this file gets imported in reservoir.py, you should just feed in the entire list of reservoirs here, maybe.

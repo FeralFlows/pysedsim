@@ -1,7 +1,7 @@
 import numpy as np
-from data_processing import Load_Input_File
-from data_processing import Excel_Data_Import
-import processing_reference_set
+from pysedsim.data_processing.data_processing import Load_Input_File
+from pysedsim.data_processing.data_processing import Excel_Data_Import
+import pysedsim.visualization.processing_reference_set
 import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib.backends import backend_agg as agg

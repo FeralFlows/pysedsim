@@ -12,18 +12,18 @@ outlet structures.
 # import relevant modules
 from __future__ import division  # This ensures result of quotient of two integers will be a float, not an integer. (e.g., 1/4 = 0.25, not 0)
 import numpy as np
-from storage_element import Storage_Element
+from pysedsim.river_basin_elements.storage_element import Storage_Element
 from outlet import Outlet
-import data_processing
-from matrix_interpolation import Matrix_Interpolation
-from flushing import Flushing
-from sluicing import Sluicing
-from dredging import Dredging
-from density_current_venting import Density_Current_Venting
+import pysedsim.data_processing.data_processing
+from pysedsim.data_processing.matrix_interpolation import Matrix_Interpolation
+from pysedsim.sediment_management.flushing import Flushing
+from pysedsim.sediment_management.sluicing import Sluicing
+from pysedsim.sediment_management.dredging import Dredging
+from pysedsim.sediment_management.density_current_venting import Density_Current_Venting
 # from bypassing import Bypassing
 from datetime import datetime  # Used to work with date objects (especially date arithmetic)
 from datetime import timedelta  # Used to add days/months/years to a datetime object
-import direct_policy_search
+import pysedsim.optimization.direct_policy_search
 
 class Reservoir(Storage_Element):
     def __init__(self, name, T, Input_Data_File, Element_Sub_Dict, stochastic_components=None, op_policy_params=None):
