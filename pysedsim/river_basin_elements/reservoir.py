@@ -14,7 +14,7 @@ from __future__ import division  # This ensures result of quotient of two intege
 import numpy as np
 from pysedsim.river_basin_elements.storage_element import Storage_Element
 from outlet import Outlet
-import pysedsim.data_processing.data_processing
+from pysedsim.data_processing.data_processing import *
 from pysedsim.data_processing.matrix_interpolation import Matrix_Interpolation
 from pysedsim.sediment_management.flushing import Flushing
 from pysedsim.sediment_management.sluicing import Sluicing

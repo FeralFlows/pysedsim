@@ -12,7 +12,7 @@ reservoir.
 # Import relevant modules
 from __future__ import division
 import numpy as np
-import pysedsim.data_processing.data_processing
+from pysedsim.data_processing.data_processing import *
 from pysedsim.river_basin_elements.storage_element import Storage_Element
 
 class Bypass_Structure(Storage_Element):

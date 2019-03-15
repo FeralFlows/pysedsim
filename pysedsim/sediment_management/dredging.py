@@ -12,7 +12,7 @@ Module to define the Dredging class and asssociated methods.
 from __future__ import division  # This ensures result of quotient of two integers will be a float, not an integer. (e.g., 1/4 = 0.25, not 0)
 from pysedsim.sediment_management.sediment_res_ops import Sediment_Res_Ops
 import numpy as np
-import pysedsim.data_processing.data_processing
+from pysedsim.data_processing.data_processing import *
 
 class Dredging(Sediment_Res_Ops):
 

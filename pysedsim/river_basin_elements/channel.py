@@ -14,7 +14,7 @@ through a power house, and for bypass diversions at the upstream end of reservoi
 from __future__ import division  # This ensures result of quotient of two integers will be a float, not an integer.
 import numpy as np
 from pysedsim.river_basin_elements.storage_element import Storage_Element
-import pysedsim.data_processing.data_processing
+from pysedsim.data_processing.data_processing import *
 import math
 
 class Channel(Storage_Element):
