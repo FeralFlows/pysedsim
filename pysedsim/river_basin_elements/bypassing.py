@@ -13,7 +13,7 @@ reservoir.
 from __future__ import division
 import numpy as np
 import pysedsim.data_processing.data_processing
-from pysedsim.simulation_elements.storage_element import Storage_Element
+from pysedsim.river_basin_elements.storage_element import Storage_Element
 
 class Bypass_Structure(Storage_Element):
     """An instance is a Bypass Structure."""

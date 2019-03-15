@@ -98,11 +98,15 @@ def Import_Simulation_Preferences(imported_specs, simulation_title, main_input_f
 
     SedSim_File_Input_Sheet = Input_Data_File['Simulation Specifications']
     # Simulation Dates and Durations
-    start_date = datetime(int(SedSim_File_Input_Sheet['B3'].value),int(SedSim_File_Input_Sheet['C3'].value),
-                          int(SedSim_File_Input_Sheet['D3'].value))
-    end_date = datetime(int(SedSim_File_Input_Sheet['B4'].value), int(SedSim_File_Input_Sheet['C4'].value),
-                          int(SedSim_File_Input_Sheet['D4'].value))
-    Sim_Dur = int((end_date - start_date).days + 1)
+    #start_date = datetime(int(SedSim_File_Input_Sheet['B3'].value),int(SedSim_File_Input_Sheet['C3'].value),
+    #                      int(SedSim_File_Input_Sheet['D3'].value))
+    #end_date = datetime(int(SedSim_File_Input_Sheet['B4'].value), int(SedSim_File_Input_Sheet['C4'].value),
+    #                      int(SedSim_File_Input_Sheet['D4'].value))
+    #Sim_Dur = int((end_date - start_date).days + 1)
+	
+    start_date = SedSim_File_Input_Sheet['B3'].value
+    end_date = SedSim_File_Input_Sheet['B4'].value						  
+	Sim_Dur = (end_date - start_date).days + 1
     T = Sim_Dur
 
     # Time series state variables to be exported
