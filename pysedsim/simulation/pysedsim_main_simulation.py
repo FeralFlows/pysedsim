@@ -11,7 +11,7 @@ simulated was instantiated from. The class methods actually contain the mass bal
 '''
 
 # Main imports
-from system_element_creation import System_Object_Creation
+from pysedsim.river_basin_elements.system_element_creation import System_Object_Creation
 import pandas as pd
 import numpy as np
 

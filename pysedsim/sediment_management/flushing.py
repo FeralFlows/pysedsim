@@ -8,12 +8,12 @@ Module to define the Flushing class and asssociated methods.
 
 # Import relevant modules
 from __future__ import division  # This ensures result of quotient of two integers will be a float, not an integer. (e.g., 1/4 = 0.25, not 0)
-from sediment_res_ops import Sediment_Res_Ops
+from pysedsim.sediment_management.sediment_res_ops import Sediment_Res_Ops
 import numpy as np
-import data_processing
+import pysedsim.data_processing.data_processing
 from datetime import timedelta  # Used to add days/months/years to a datetime object
 from datetime import datetime
-from matrix_interpolation import Matrix_Interpolation
+from pysedsim.data_processing.matrix_interpolation import Matrix_Interpolation
 
 class Flushing(Sediment_Res_Ops):
     '''

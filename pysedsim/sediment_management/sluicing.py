@@ -12,8 +12,8 @@ operating policy if the user indicates sluicing is to occur at the reservoir.
 
 # Import relevant modules
 from __future__ import division  # This ensures result of quotient of two integers will be a float
-from sediment_res_ops import Sediment_Res_Ops
-import data_processing
+from pysedsim.sediment_management.sediment_res_ops import Sediment_Res_Ops
+import pysedsim.data_processing.data_processing
 from datetime import timedelta  # Used to add days/months/years to a datetime object
 
 class Sluicing(Sediment_Res_Ops):

@@ -12,8 +12,8 @@ reservoir.
 # Import relevant modules
 from __future__ import division
 import numpy as np
-import data_processing
-from storage_element import Storage_Element
+import pysedsim.data_processing.data_processing
+from pysedsim.simulation_elements.storage_element import Storage_Element
 
 class Bypass_Structure(Storage_Element):
     """An instance is a Bypass Structure."""

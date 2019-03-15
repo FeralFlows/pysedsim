@@ -15,9 +15,9 @@ outlets to achieve those elevation targets, and mass balance calculations for th
 
 # Import relevant modules
 from __future__ import division
-from sediment_res_ops import Sediment_Res_Ops
-import data_processing
-from matrix_interpolation import Matrix_Interpolation
+from pysedsim.sediment_management.sediment_res_ops import Sediment_Res_Ops
+import pysedsim.data_processing.data_processing
+from pysedsim.data_processing.matrix_interpolation import Matrix_Interpolation
 from math import log
 
 class Density_Current_Venting(Sediment_Res_Ops):

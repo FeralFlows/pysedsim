@@ -8,14 +8,14 @@ file contains no function definitions.
 
 # Imports
 from __future__ import division
-from data_processing import Import_Simulation_Preferences
-from data_processing import Determine_Num_Scenarios
-from data_processing import Monte_Carlo_Import
-from data_processing import Export_Simulation_Output
-from system_element_creation import Simulation_Network_Creation
-from pysedsim_main_simulation import SedSim_Main_Simulation
+from pysedsim.data_processing.data_processing import Import_Simulation_Preferences
+from pysedsim.data_processing.data_processing import Determine_Num_Scenarios
+from pysedsim.data_processing.data_processing import Monte_Carlo_Import
+from pysedsim.data_processing.data_processing import Export_Simulation_Output
+from pysedsim.river_basin_elements.system_element_creation import Simulation_Network_Creation
+from pysedsim.simulation.pysedsim_main_simulation import SedSim_Main_Simulation
 import time  # for keeping track of model execution time
-from performance import Performance
+from pysedsim.data_processing.performance import Performance
 
 def PySedSim(file_name = 'PySedSim_Input_Specifications.csv', Simulation_mode = 'regular', start_stop = None,
              parallel_label = None, borg_dict = None, dps_dict = None, decision_vars = None, scenario_name=None,

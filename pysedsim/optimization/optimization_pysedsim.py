@@ -12,10 +12,10 @@ which requires no inputs when being called in deterministic mode.
 # Imports
 import numpy as np
 import pysedsim
-from data_processing import Op_Sys_Folder_Operator
-from data_processing import Determine_Num_Scenarios
-from data_processing import Load_Input_File
-import direct_policy_search
+from pysedsim.data_processing.data_processing import Op_Sys_Folder_Operator
+from pysedsim.data_processing.data_processing import Determine_Num_Scenarios
+from pysedsim.data_processing.data_processing import Load_Input_File
+import pysedsim.optimization.direct_policy_search
 import os
 import platform
 
