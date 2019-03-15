@@ -138,7 +138,8 @@ class Reservoir(Storage_Element):
         self.op_policy_params = op_policy_params  # Will be reset if DPS. Set here to capture flushing preferences.
         if 'E-V-A-S' in Input_Data_File.sheetnames:
             # Import Elevation-Volume-Area-Sediment data
-            self.E_V_A = data_processing.Excel_Data_Import(self.name, Input_Data_File, 'E-V-A-S', 2, 4, max_distinct_data_types = None, data_name_offset = 3)
+            self.E_V_A = Excel_Data_Import(self.name, Input_Data_File, 'E-V-A-S', 2, 4, max_distinct_data_types = None,
+                                           data_name_offset = 3)
             #self.E_V_A_TRACK[0] = deepcopy(self.E_V_A)  # Time zero value of E_V_A is first curve before sedimentation.
             self.Original_River_Bed_Elevation = self.E_V_A[0][0]  # Initialize flushing channel elevation to original river bed elevation at each reservoir
             self.Settled_Volume_to_Distribute = 0  # Initialize variable used to distribute deposited sediment into the reservoir's storage volume/elevation profile.
@@ -147,15 +148,15 @@ class Reservoir(Storage_Element):
         else:
             print "Error: required worksheet 'E-V-A-S' is not provided in input data file"
         if 'Evaporation Data' in Input_Data_File.sheetnames:
-            self.Monthly_Evap_Data = data_processing.Excel_Data_Import(self.name, Input_Data_File, 'Evaporation Data',
-                                                                       1, 12, max_distinct_data_types=None,
-                                                                       data_name_offset=None)
+            self.Monthly_Evap_Data = Excel_Data_Import(self.name, Input_Data_File, 'Evaporation Data',
+                                                       1, 12, max_distinct_data_types=None,
+                                                       data_name_offset=None)
         self.Environmental_Flow_Data = [None for i in range(12)]  # Default in case user does not specify worksheet.
         if 'Environmental Flow Data' in Input_Data_File.sheetnames:
-            self.Environmental_Flow_Data = data_processing.Excel_Data_Import(self.name, Input_Data_File,
-                                                                             'Environmental Flow Data', 1, 12,
-                                                                             max_distinct_data_types=None,
-                                                                             data_name_offset=None)
+            self.Environmental_Flow_Data = Excel_Data_Import(self.name, Input_Data_File,
+                                                             'Environmental Flow Data', 1, 12,
+                                                             max_distinct_data_types=None,
+                                                             data_name_offset=None)
         # Set any "None" values to zero in environmental flow data array
         for i in range(len(self.Environmental_Flow_Data)):
             if self.Environmental_Flow_Data[i] is None:
@@ -167,9 +168,9 @@ class Reservoir(Storage_Element):
              self.Reservoir_Length, self.Perform_Flushing, self.Perform_Dredging, self.Perform_Bypassing,
              self.Perform_Density_Current_Venting, self.Perform_Sluicing, self.Group_ID, self.Flushing_Group_ID,
              self.Sed_Group_ID, self.Non_Flushing_Group_ID, self.density_SS, self.DPS_Policy_Name,
-             self.Min_Net_Head] = data_processing.Excel_Data_Import(self.name, Input_Data_File,
-                                                                    'Reservoir Specifications', 1, 24,
-                                                                    max_distinct_data_types=None, data_name_offset=None)
+             self.Min_Net_Head] = Excel_Data_Import(self.name, Input_Data_File,
+                                                    'Reservoir Specifications', 1, 24,
+                                                    max_distinct_data_types=None, data_name_offset=None)
             # Set default values for parameters read in from Reservoir Specifications.
             # Create entry in operating policy dictionary for each type of sediment management the user requests to have performed.
             # The order in which these imports occur often matters, so it is suggested not to reorganize code in this section.
@@ -310,12 +311,12 @@ class Reservoir(Storage_Element):
 
             if self.Reservoir_Operations_Goal == "Meet specified daily water elevation (mamsl) targets - annually recurring":
                 if 'Elevation Target Recurring' in Input_Data_File.sheetnames:
-                    self.Recurring_elevation_target = data_processing.Excel_Data_Import(self.name, Input_Data_File,
-                                                                                        'Elevation Target Recurring', 0,
-                                                                                        366,
-                                                                                        max_distinct_data_types=None,
-                                                                                        data_name_offset=None,
-                                                                                        start_date=start_date)
+                    self.Recurring_elevation_target = Excel_Data_Import(self.name, Input_Data_File,
+                                                                        'Elevation Target Recurring', 0,
+                                                                        366,
+                                                                        max_distinct_data_types=None,
+                                                                        data_name_offset=None,
+                                                                        start_date=start_date)
                     # Assume these dates run from Jan 1 to Dec 31, and include a Feb 29 value. (Hence, there are assumed to be 366 values).
                     self.Recurring_elev_target_dict = {}  # Annually recurring reservoir elevation target dictionary that stores targets by month/day.
 
@@ -341,11 +342,11 @@ class Reservoir(Storage_Element):
                           "%s" % self.name
             if self.Reservoir_Operations_Goal_ID == 1:
                 if 'Storage Volume Target' in Input_Data_File.sheetnames:
-                    self.STORAGE_TARGET = data_processing.Excel_Data_Import(self.name, Input_Data_File,
-                                                                            'Storage Volume Target', 0, T + 1,
-                                                                            max_distinct_data_types=None,
-                                                                            data_name_offset=None,
-                                                                            start_date=start_date)
+                    self.STORAGE_TARGET = Excel_Data_Import(self.name, Input_Data_File,
+                                                            'Storage Volume Target', 0, T + 1,
+                                                            max_distinct_data_types=None,
+                                                            data_name_offset=None,
+                                                            start_date=start_date)
                     # Store a time 0 elevation target corresponding to specified time zero storage target.
                     self.ELEVATION_TARGET[0] = Matrix_Interpolation(self.name, self.E_V_A, "storage", "elevation",
                                                                     self.STORAGE_TARGET[0])
@@ -355,11 +356,11 @@ class Reservoir(Storage_Element):
                           "%s" % self.name
             elif self.Reservoir_Operations_Goal == "Meet specified daily water elevation (mamsl) targets":
                 if 'Storage Volume Elevation Target' in Input_Data_File.sheetnames:
-                    self.ELEVATION_TARGET = data_processing.Excel_Data_Import(self.name, Input_Data_File,
-                                                                              'Storage Volume Elevation Target', 0,
-                                                                              T + 1, max_distinct_data_types=None,
-                                                                              data_name_offset=None,
-                                                                              start_date=start_date)
+                    self.ELEVATION_TARGET = Excel_Data_Import(self.name, Input_Data_File,
+                                                              'Storage Volume Elevation Target', 0,
+                                                              T + 1, max_distinct_data_types=None,
+                                                              data_name_offset=None,
+                                                              start_date=start_date)
                     # Store a time 0 storage target corresponding to specified time zero elevation target.
                     self.STORAGE_TARGET[0] = Matrix_Interpolation(self.name, self.E_V_A, "elevation", "storage",
                                                                   self.ELEVATION_TARGET[0])
@@ -371,7 +372,7 @@ class Reservoir(Storage_Element):
                 if 'Daily Energy Targets' in Input_Data_File.sheetnames:
                     pass
                     # SET THESE LATER WHEN NEEDED:
-                    # self.Daily_Energy_Targets = data_processing.Excel_Data_Import(self.name, Input_Data_File, 'Daily Energy Targets' , 0, T,
+                    # self.Daily_Energy_Targets = Excel_Data_Import(self.name, Input_Data_File, 'Daily Energy Targets' , 0, T,
                     # max_distinct_data_types = None, data_name_offset = 4, start_date = start_date)
                     # self.Energy_Release_Goal = np.zeros(T)
                 else:
@@ -388,10 +389,10 @@ class Reservoir(Storage_Element):
                           "%s" % self.name
             elif self.Reservoir_Operations_Goal_ID == 6:
                 if 'WSE-Inflow Policy' in Input_Data_File.sheetnames:
-                    self.wse_inflow_target = data_processing.Excel_Data_Import(self.name, Input_Data_File,
-                                                                               'WSE-Inflow Policy', 2, 2,
-                                                                               max_distinct_data_types=None,
-                                                                               data_name_offset=3)
+                    self.wse_inflow_target = Excel_Data_Import(self.name, Input_Data_File,
+                                                               'WSE-Inflow Policy', 2, 2,
+                                                               max_distinct_data_types=None,
+                                                               data_name_offset=3)
                     # max_distinct_data_types = None, data_name_offset = 4, start_date = start_date)
                 else:
                     print "Error: worksheet 'WSE-Inflow Policy' is not provided in input data file, but is required " \
@@ -451,7 +452,7 @@ class Reservoir(Storage_Element):
             print "Error: required worksheet 'Reservoir Specifications' is not provided in input data file"
 
         if 'Tailwater Rating Curve' in Input_Data_File.sheetnames:
-            self.Tailwater_Rating_Curve = data_processing.Excel_Data_Import(self.name, Input_Data_File, 'Tailwater Rating Curve', 2, 2,
+            self.Tailwater_Rating_Curve = Excel_Data_Import(self.name, Input_Data_File, 'Tailwater Rating Curve', 2, 2,
                                                             max_distinct_data_types=None, data_name_offset=3)
         if 'Egg Passage Targets' in Input_Data_File.sheetnames:
             # Initialize relevant arrays
@@ -465,10 +466,10 @@ class Reservoir(Storage_Element):
             # bypass if one exists.
             # reservoir every day (=1 unit of larvae).
             # Import data from input sheet
-            self.Egg_Passage_Rating_Curve = data_processing.Excel_Data_Import(self.name, Input_Data_File,
-                                                                              'Egg Passage Targets', 2, 4,
-                                                                              max_distinct_data_types=None,
-                                                                              data_name_offset=3)
+            self.Egg_Passage_Rating_Curve = Excel_Data_Import(self.name, Input_Data_File,
+                                                              'Egg Passage Targets', 2, 4,
+                                                              max_distinct_data_types=None,
+                                                              data_name_offset=3)
             if len(self.Egg_Passage_Rating_Curve[0]) > 0:
                 self.Evaluate_Egg_Passage = 1
                 # Larvae Passage
@@ -521,10 +522,10 @@ class Reservoir(Storage_Element):
         # end of the reservoir. Not a common scenario; use this feature with caution, as it assumes there is not
         # complete control of the reservoir's water levels.
         if 'Max Reservoir WSE' in Input_Data_File.sheetnames:
-            self.TERMINAL_WL_Rating_Curve = data_processing.Excel_Data_Import(self.name, Input_Data_File,
-                                                                              'Max Reservoir WSE', 2, 2,
-                                                                              max_distinct_data_types=None,
-                                                                              data_name_offset=3)
+            self.TERMINAL_WL_Rating_Curve = Excel_Data_Import(self.name, Input_Data_File,
+                                                              'Max Reservoir WSE', 2, 2,
+                                                              max_distinct_data_types=None,
+                                                              data_name_offset=3)
             if len(self.TERMINAL_WL_Rating_Curve[0]) > 0:
                 self.Cap_Res_WL = 1
                 self.Terminal_WSE = np.zeros(T+1)  # Maximum WSE of reservoir if uncontrolled upstream outlet/spillway

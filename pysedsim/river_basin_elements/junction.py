@@ -98,17 +98,17 @@ class Junction(Storage_Element):
             if self.name not in stochastic_flow_list:
                 # This junction does not have stochastic flows specified in a file. Therefore, take any provided deterministic time
                 # series of inflows and use those if they exist.
-                self.Q_incremental = data_processing.Excel_Data_Import(self.name, Input_Data_File, 'Incremental Flows',
-                                                                       0, T, max_distinct_data_types=None,
-                                                                       data_name_offset=None,
-                                                                       start_date=start_date)  # Required input
+                self.Q_incremental = Excel_Data_Import(self.name, Input_Data_File, 'Incremental Flows',
+                                                       0, T, max_distinct_data_types=None,
+                                                       data_name_offset=None,
+                                                       start_date=start_date)  # Required input
                 self.Q_out_unreg_for_param_calib = self.Q_incremental
         if 'Sediment Loads' in Input_Data_File.sheetnames:
             [self.Cum_Annual_SED_LOAD, self.sed_alpha, self.sed_beta,
-             self.calibration_preference] = data_processing.Excel_Data_Import(self.name, Input_Data_File,
-                                                                              'Sediment Loads', 1, 4,
-                                                                              max_distinct_data_types=None,
-                                                                              data_name_offset=None)
+             self.calibration_preference] = Excel_Data_Import(self.name, Input_Data_File,
+                                                              'Sediment Loads', 1, 4,
+                                                              max_distinct_data_types=None,
+                                                              data_name_offset=None)
             # Call of Excel_Data_Import if junction name isn't listed will return "None". This instead needs to be a zero value.
             if self.Cum_Annual_SED_LOAD is None:
                 self.Cum_Annual_SED_LOAD = 0
@@ -146,13 +146,13 @@ class Junction(Storage_Element):
             self.sed_beta = 0  # No cumulative annual sediment load specified. Set alpha = beta = 0.
             if self.calibration_preference == 3:
                 if 'Incremental Sediment Loads' in self.Input_Data_File.sheetnames:
-                    self.Incremental_Sed_Load_Junction = data_processing.Excel_Data_Import(self.name,
-                                                                                           self.Input_Data_File,
-                                                                                           'Incremental Sediment Loads',
-                                                                                           0, T,
-                                                                                           max_distinct_data_types=None,
-                                                                                           data_name_offset=None,
-                                                                                           start_date=start_date)
+                    self.Incremental_Sed_Load_Junction = Excel_Data_Import(self.name,
+                                                                           self.Input_Data_File,
+                                                                           'Incremental Sediment Loads',
+                                                                           0, T,
+                                                                           max_distinct_data_types=None,
+                                                                           data_name_offset=None,
+                                                                           start_date=start_date)
                 else:
                     print "Error: No 'Incremental Sediment Loads' worksheet is provided. This sheet is required given " \
                           "the sediment load preferences specified in the 'Sediment Loads' worksheet."
@@ -189,11 +189,11 @@ class Junction(Storage_Element):
     def Junction_Flow_Dist_Sheet(self, Input_Data_File):
         if 'Junction Flow Distribution' in Input_Data_File.sheetnames:
             # Load flow distribution data for junction. Then parse the data so only the required portions remain.
-            self.Jct_Flow_Distribution = data_processing.Excel_Data_Import(self.name, Input_Data_File,
-                                                                            'Junction Flow Distribution', 2,
-                                                                            self.num_effective_branches + 1,
-                                                                            max_distinct_data_types=None,
-                                                                            data_name_offset=1)
+            self.Jct_Flow_Distribution = Excel_Data_Import(self.name, Input_Data_File,
+                                                            'Junction Flow Distribution', 2,
+                                                            self.num_effective_branches + 1,
+                                                            max_distinct_data_types=None,
+                                                            data_name_offset=1)
             if all(item != [] for item in self.Jct_Flow_Distribution):
                 self.Jct_Flow_Dist_Dict = {key: [[] for i in range(2)] for key in self.Element_Sub_Dict['Outflow Elements']}
                 for loc in range(self.num_effective_branches):
@@ -208,11 +208,11 @@ class Junction(Storage_Element):
                                        'Distribution worksheet doesnt match a downstream element.' % self.name)
 
     def Res_Nat_Byp_Sheet(self, Input_Data_File):
-        self.Jct_Flow_Distribution = data_processing.Excel_Data_Import(self.name, Input_Data_File,
-                                                                       'Reservoir Natural Bypass', 2,
-                                                                       2+self.num_effective_branches,
-                                                                       max_distinct_data_types=None,
-                                                                       data_name_offset=1) # 4 lists of data
+        self.Jct_Flow_Distribution = Excel_Data_Import(self.name, Input_Data_File,
+                                                       'Reservoir Natural Bypass', 2,
+                                                       2+self.num_effective_branches,
+                                                       max_distinct_data_types=None,
+                                                       data_name_offset=1) # 4 lists of data
 
         if all(item != [] for item in self.Jct_Flow_Distribution):
             self.Jct_Flow_Dist_Dict = {key: [[] for i in range(3)] for key in self.Element_Sub_Dict['Outflow Elements']}

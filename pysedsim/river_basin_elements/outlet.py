@@ -24,11 +24,11 @@ class Outlet:
         # storage_element_name = reservoir name, dam name, channel name, etc.
         # Input_Data_File = .xlsx input file (workbook) name
         # Load Outlet Capacity Table
-        [self.Outlet_Capacity_Dict, self.num_outlets] = data_processing.Excel_Data_Import(storage_element_name,
-                                                                                          Input_Data_File,
-                                                                                          "Outlet Capacity Data", 2, 2,
-                                                                                          max_distinct_data_types=7,
-                                                                                          data_name_offset=4)
+        [self.Outlet_Capacity_Dict, self.num_outlets] = Excel_Data_Import(storage_element_name,
+                                                                          Input_Data_File,
+                                                                          "Outlet Capacity Data", 2, 2,
+                                                                          max_distinct_data_types=7,
+                                                                          data_name_offset=4)
         # Initialize Arrays
         Outlet.Array_Initialization(self, storage_element_name, T)
 

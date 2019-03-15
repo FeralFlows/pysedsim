@@ -44,7 +44,9 @@ class Bypass_Structure(Storage_Element):
 
     def Import_Data(self, T, Input_Data_File):
         if 'Bypassing' in Input_Data_File.sheetnames:
-            [self.Bypass_Flow_Threshold, self.Bypass_Capacity, self.Bypass_Fraction, self.Min_Bypass_Flow, self.Min_Bypass_Flow_Fraction] = data_processing.Excel_Data_Import(self.name, Input_Data_File, 'Bypassing', 1, 5, max_distinct_data_types = None, data_name_offset = None)  # Optional worksheet
+            [self.Bypass_Flow_Threshold, self.Bypass_Capacity, self.Bypass_Fraction, self.Min_Bypass_Flow, self.Min_Bypass_Flow_Fraction] = \
+                Excel_Data_Import(self.name, Input_Data_File, 'Bypassing', 1, 5, max_distinct_data_types = None,
+                                  data_name_offset = None)  # Optional worksheet
         else:
             self.error = 1
             print "Error: Sediment management of type %s does not have a corresponding and correctly named worksheet in the input file." % self.Sed_Mgmt_Type

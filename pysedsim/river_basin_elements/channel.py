@@ -78,10 +78,10 @@ class Channel(Storage_Element):
              self.sed_beta, self.Initial_Sediment_Mass, channel_routing, self.density_SS,
              self.calibration_preference, self.L, self.W_bkfl, self.z_ch, self.depth_bkfl, self.ch_slope,
              self.mann_n, self.PRF, self.CSP, self.SP_EXP,
-             self.flow_thold] = data_processing.Excel_Data_Import(self.name, Input_Data_File,
-                                                                            'Reach Specifications', 1, 20,
-                                                                            max_distinct_data_types=None,
-                                                                            data_name_offset=None)
+             self.flow_thold] = Excel_Data_Import(self.name, Input_Data_File,
+                                                  'Reach Specifications', 1, 20,
+                                                   max_distinct_data_types=None,
+                                                   data_name_offset=None)
 
             # Read in a flow threshold, above/below which to track performance of particular metrics.
             if self.flow_thold is None:
