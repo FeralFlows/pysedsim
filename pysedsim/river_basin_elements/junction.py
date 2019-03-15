@@ -8,7 +8,7 @@ Module to define the Junction class and methods.
 # import relevant modules
 from __future__ import division  # Ensures result of quotient of two integers will be a float, not an integer.
 import numpy as np
-import pysedsim.data_processing.data_processing
+from pysedsim.data_processing.data_processing import *
 from pysedsim.river_basin_elements.storage_element import Storage_Element
 from pysedsim.data_processing.matrix_interpolation import Matrix_Interpolation
 from pysedsim.data_processing.matrix_interpolation import Return_Closest_Values
