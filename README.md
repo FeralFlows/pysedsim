@@ -27,28 +27,33 @@ The source code is written in Python. PySedSim includes four core model features
 
 This section provides a very brief guide to get started with PySedSim. Much more detailed instructions appear in the PySedSim user manual, especially regarding the preparation of input data to the model. The user manual is available in the /docs directory of this repository. Users may wish to use the PySedSim example cases provided in the /example directory to test the steps below, as well as to see how to create the input model files for your own model application.
 
-1.	Download and install Python 2. (Note: v. 2.7 or later is suggested for Python 2; PySedSim will not work with Python 3). 
+1.	Download and install Python 2. (Note: v. 2.7 or later is suggested for Python 2; PySedSim has not been tested with Python 3). 
 
 You can get a free distribution of Python and most of its most popular packages (libraries) for scientific computing through Anaconda: https://www.continuum.io/downloads.
 
 2. Create a directory on your workstation into which to clone PySedSim. We will refer to this as pysedsim_main.
 
-3. We recommend conducting the clone process from the command line. If you are unfamiliar working from the command line, we suggest you downloading Git for free here: https://git-scm.com/downloads. This Git download will come with “git bash”, from which you can attempt the “git clone” operation described below. 
+3. We recommend conducting the clone process (discussed in the following steps) from the command line. If you are unfamiliar working from the command line, we suggest you downloading Git for free here: https://git-scm.com/downloads. This Git download will come with “git bash”, from which you can attempt the “git clone” operation described below. 
 
-3. This repository uses the Git Large File Storage (LFS) extension (see https://git-lfs.github.com/ for details). Please install GitLFS and run the following command before cloning if you do not already have Git LFS initialized: 
+4. This repository uses the Git Large File Storage (LFS) extension (see https://git-lfs.github.com/ for details). Please install GitLFS and run the following command in your pysedsims_main directory before cloning if you do not already have Git LFS initialized: 
 
 >>git lfs install.
 
-Note: 
+5. Clone PySedSim into your pysedsim_main directory by entering the following command in a prompt (e.g., Git bash):
 
-4. Users can either directly download PySedSim files from the model’s Github repository (https://github.com/FeralFlows/PySedSim), or can clone PySedSim from a command prompt. We recommend cloning files rather than downloading them directly from the repository. This will enable you to easily pull down recent PySedSim repository updates (e.g., new model features or bug fixes) from our team directly to the local repository on your computer.
+>> git clone https://github.com/FeralFlows/PySedSim.git
 
-Clone Xanthos into your desired location git clone https://github.com/JGCRI/xanthos.git. Some Windows users have had better luck with git lfs clone https://github.com/JGCRI/xanthos.git
-Make sure that setuptools is installed for your Python version. This is what will be used to support the installation of the Xanthos package.
-From the directory you cloned Xanthos into run python setup.py install . This will install Xanthos as a Python package on your machine and install of the needed dependencies. If installing in an HPC environment, a community user advised that it is best to install the anaconda environment before running the installation command. HPC environments may also require the use of the --user flag in the install command to avoid permissions errors.
-Setup your configuration file (.ini). Examples are located in the "example" directory. Be sure to change the root directory to the directory that holds your data (use the xanthos/example directory as an example).
-If running Xanthos from an IDE: Be sure to include the path to your config file. See the "xanthos/example/example.py" script as a reference.
-If running Xanthos from terminal: Run model.py found in xanthos/xanthos/model.py passing the full path to the config file as the only argument. (e.g., python model.py <dirpath>/config.ini).
+The above command should initiate a download of PySedSim files, including large files stored with Git LFS. If none of the large files download in the example/ directory, windows users have have better luck with:
+
+>> git lfs clone https://github.com/FeralFlows/PySedSim.git
+
+6. From the directory you cloned PySedSim into, run:
+
+>>python setup.py install . 
+
+This will install PySedSim as a Python package on your machine and install all of the needed dependencies. If you receive any errors that certain packages are not installed, we recommend installing these packages through the Anaconda command prompt by typing the command below (inserting the correct package where “package_name” appears”).
+
+>>pip install package_name
 
 # <a name="Pubs"></a>Publications using PySedSim
 
