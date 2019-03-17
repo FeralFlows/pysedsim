@@ -55,6 +55,22 @@ This will install PySedSim as a Python package on your machine and install all o
 
 >>pip install package_name
 
+7. Run the provided example simulation(s).
+
+We recommend first running the example formulations provided out-of-the-box in the cloned repository. To do this, change directories to a formulation’s directory (e.g., formulation 1):
+
+>>cd pysedsim_sims_main/example/formulation_1
+
+Then, run pysedsim from the command prompt with the following command:
+
+>>python formuation_1.py
+
+Check the output directories, and log file, to confirm that the simulation has run correctly.
+
+8. Setup and run your own simulation.
+
+We refer you to the user manual in this repository's /docs directory for images and examples of how to prepare and correctly format input files for your own PySedSim application.
+
 # <a name="Pubs"></a>Publications using PySedSim
 
 <strong> Peer-reviewed Publications: </strong>
