@@ -153,6 +153,8 @@ class PySedSim():
 			parallelize = None
 
 		for i in range(num_scenarios):
+			# Initialize logging file
+			logger.info('Beginning simulation scenario: ' + simulation_titles_list[i])
 			# In case looping through scenarios, re-initiate start_stop
 			if parallelize is None:
 				self.start_stop = None
@@ -203,6 +205,7 @@ class PySedSim():
 																										   Synthetic_Inflows_dictionary, op_policy_params=self.dps_dict)
 
 			print("--- Simulation(s) Complete in %s seconds ---" % (time.time() - start_time))
+			logging.info("--- Simulation(s) Complete in %s seconds ---")
 
 			# Export output data if user indicates this should be conducted, or if pysedsim is being called as part of a
 			# re-evaluation process, in which case output is (assumed to be) desired to be stored.
