@@ -12,6 +12,7 @@ each time step.
 from __future__ import division  # Ensures result of quotient of two integers will be a float, not an integer.
 import numpy as np
 from datetime import timedelta  # Used to add days/months/years to a datetime object
+import logging
 
 class Storage_Element:
     SPD = 86400  # SPD = Seconds Per Day

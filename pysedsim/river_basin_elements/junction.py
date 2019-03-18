@@ -12,6 +12,7 @@ from pysedsim.data_processing.data_processing import *
 from pysedsim.river_basin_elements.storage_element import Storage_Element
 from pysedsim.data_processing.matrix_interpolation import Matrix_Interpolation
 from pysedsim.data_processing.matrix_interpolation import Return_Closest_Values
+import logging
 #from sklearn import linear_model
 
 class Junction(Storage_Element):
@@ -115,8 +116,8 @@ class Junction(Storage_Element):
             self.Annual_SED_LOAD = self.Cum_Annual_SED_LOAD # Set initial value to this, but later it will be reduced by any and all upstream cumulative loads that exist.
         else:
             if 'Incremental Sediment Loads' not in Input_Data_File.sheetnames:
-                print "Error: No 'Sediment Loads' worksheet is provided. This sheet is required since incremental " \
-                      "sediment loads are provided iun the 'Incremental Sediment Loads' worksheet"
+                logging.critical("No 'Sediment Loads' worksheet is provided. This sheet is required since "
+                           "incremental sediment loads are provided in the Incremental Sediment Loads worksheet.")
 
         # Incremental sediment load calibration preferences
         if self.calibration_preference == "Calibrate coefficient":
@@ -126,8 +127,8 @@ class Junction(Storage_Element):
             if self.sed_alpha >= 0 and self.sed_beta >= 0:
                 pass
             else:
-                print "Error: Incremental sediment load parameters not properly specified for element %s in Sediment " \
-                      "Loads worksheet" % self.name
+                logging.critical("Incremental sediment load parameters not properly specified for element {0} in " \
+                               "Sediment Loads worksheet".format(self.name))
         elif self.calibration_preference == "Specify daily incremental sediment loads (kg/day)":
             self.calibration_preference = 3  # sediment loads have already been specified
         else:
@@ -154,8 +155,8 @@ class Junction(Storage_Element):
                                                                            data_name_offset=None,
                                                                            start_date=start_date)
                 else:
-                    print "Error: No 'Incremental Sediment Loads' worksheet is provided. This sheet is required given " \
-                          "the sediment load preferences specified in the 'Sediment Loads' worksheet."
+                    logging.critical("No Incremental Sediment Loads worksheet is provided. This sheet is required " 
+                                    "given the sediment load preferences specified in the 'Sediment Loads' worksheet.")
 
         self.num_branches = len(self.Element_Sub_Dict['Outflow Elements'])  # number of outflow elements per junction
         # Set number of effective branches as number of branches minus 1 if there is a diversion channel that has been allocated flow
@@ -202,8 +203,8 @@ class Junction(Storage_Element):
                         self.Jct_Flow_Dist_Dict[self.Jct_Flow_Distribution[loc + 1][0]][1] = self.Jct_Flow_Distribution[loc + 1][2:]
                         self.flow_fraction_specified = 1  # User has specified junction fraction distribution.
                     except KeyError:
-                        print "Error: provided outflow element for Junction %s in Junction Flow Distribution " \
-                              "worksheet doesn't match a downstream element." % self.name
+                        logging.critical("Provided outflow element for Junction {0} in Junction Flow Distribution " \
+                              "worksheet doesn't match a downstream element.".format(self.name))
                         raise KeyError('Provided outflow element for Junction %s in Junction Flow. '
                                        'Distribution worksheet doesnt match a downstream element.' % self.name)
 
@@ -248,8 +249,8 @@ class Junction(Storage_Element):
                         self.regr[self.Jct_Flow_Distribution[loc + 2][0]] = linear_model.LinearRegression()
                         self.regr[self.Jct_Flow_Distribution[loc + 2][0]].fit(x,self.Jct_Flow_Dist_Dict[self.Jct_Flow_Distribution[loc + 2][0]][2])
                 except KeyError:
-                    print "Error: provided outflow element for Junction %s in Junction Flow Distribution " \
-                          "worksheet doesn't match a downstream element." % self.name
+                    logging.critical("Provided outflow element for Junction {0} in Junction Flow Distribution " \
+                          "worksheet doesn't match a downstream element.".format(self.name))
                     raise KeyError
 
     def Outflow_Element_Allocation(self, t):
@@ -360,7 +361,8 @@ class Junction(Storage_Element):
             if self.Annual_SED_LOAD > 0:
                 self.sed_alpha = self.Annual_SED_LOAD / (sum(86400 * np.power(self.Q_incremental, (self.sed_beta + 1))) / (self.T / 365))
             else:
-                print "Error: Sediment calibration requested for Junction %s, but no annual sediment load provided in Sediment Loads worksheet" % self.name
+                logging.critical("Sediment calibration requested for Junction {0}, but no annual sediment load " \
+                        "provided in Sediment Loads worksheet".format(self.name))
                 self.sed_alpha = 0  # No cumulative annual sediment load specified. Set alpha = beta = 0.
                 self.sed_beta = 0  # No cumulative annual sediment load specified. Set alpha = beta = 0.
         if self.calibration_preference in [1, 2]:

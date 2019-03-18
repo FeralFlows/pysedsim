@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib.backends import backend_agg as agg
 import math
+import logging
 
 def DPS_Policy_Decision(DPS_inputs, DPS_dict):
 
@@ -406,7 +407,7 @@ def DPS_Policy_Plotting(DPS_dict, dps_plt_dict, objs_to_plot, ref_set_pref_dict)
             policies_to_plot = dps_plt_dict['policies_to_plot']  # User needs to provide a list of policies to make
             # plots for.
         except KeyError:
-            print("Error: User must supply row numbers of policies to plot from reference set file")
+            logging.critical("User must supply row numbers of policies to plot from reference set file")
     else:
         try:
             policies_to_plot = dps_plt_dict['policies_to_plot']  # User needs to provide a list of policies to make

@@ -11,6 +11,7 @@ from pysedsim.river_basin_elements.channel import Channel
 from pysedsim.river_basin_elements.channel import Diversion_Channel
 from pysedsim.river_basin_elements.junction import Junction
 from pysedsim.river_basin_elements.bypassing import Bypass_Structure
+import logging
 
 def Simulation_Network_Creation(Input_Data_File):
 

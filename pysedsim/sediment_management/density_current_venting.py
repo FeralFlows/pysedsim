@@ -19,6 +19,7 @@ from pysedsim.sediment_management.sediment_res_ops import Sediment_Res_Ops
 from pysedsim.data_processing.data_processing import *
 from pysedsim.data_processing.matrix_interpolation import Matrix_Interpolation
 from math import log
+import logging
 
 class Density_Current_Venting(Sediment_Res_Ops):
     def __init__(self, element_name, T, Input_Data_File, res_length):
@@ -44,8 +45,8 @@ class Density_Current_Venting(Sediment_Res_Ops):
 																	data_name_offset=None)  # Optional
         else:
             self.error = 1
-            print "Error: Sediment management of type %s does not have a corresponding and correctly named worksheet in the input file." \
-                  % self.Sed_Mgmt_Type
+            logging.critical("Sediment management of type {0} does not have a corresponding and correctly named "
+                             "worksheet in the input file.".format(self.Sed_Mgmt_Type))
         # Set defaults if none specified
         if self.Min_venting_efficiency is not None:
             pass  # do nothing, value set already by user

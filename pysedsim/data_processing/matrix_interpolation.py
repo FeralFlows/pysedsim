@@ -13,6 +13,7 @@ known value of the first variable.
 
 # Import relevant libraries:
 from __future__ import division  # This ensures result of quotient of two integers will be a float, not an integer. (e.g., 1/4 = 0.25, not 0).
+import logging
 
 def Matrix_Interpolation(name, input_matrix, provided, locate, input_value):
     # This is a generalized function that accepts a matrix and performs an interpolation in the matrix given a value in one column and a desired value in the next column over.
@@ -85,7 +86,8 @@ def Matrix_Interpolation(name, input_matrix, provided, locate, input_value):
             track_highest_value = input_matrix[column_return][j] #Store highest current value, in case we need to set interpolated_value = this value at the end.
         else:
             Interpolated_Value = input_matrix[column_return][j]
-            print "Error: for element %s, provided %s value %s negative, which is physically infeasible." % (name, input_label, input_value)
+            logging.critical("for element {0}, provided {1} value {2} negative, which is physically "
+                             "infeasible.".format(name, input_label, input_value))
             break
         if input_value > input_matrix[column_start][j]:
             # Skip to next row in E-V-A table, unless we are on last row of provided matrix, in which case store highest possible value and return that, along with an error message to user.

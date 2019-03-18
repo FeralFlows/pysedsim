@@ -24,6 +24,7 @@ from pysedsim.sediment_management.density_current_venting import Density_Current
 from datetime import datetime  # Used to work with date objects (especially date arithmetic)
 from datetime import timedelta  # Used to add days/months/years to a datetime object
 import pysedsim.optimization.direct_policy_search
+import logging
 
 class Reservoir(Storage_Element):
     def __init__(self, name, T, Input_Data_File, Element_Sub_Dict, stochastic_components=None, op_policy_params=None):
@@ -146,7 +147,7 @@ class Reservoir(Storage_Element):
             # Store small volumes in each reservoir for checking later whether reservoir is full of sediment or not. Miniscule volumes of water are left remaining at each elevation for model execution purposes.
             self.storage_sum_full_res = 0  # Initialize to zero
         else:
-            print "Error: required worksheet 'E-V-A-S' is not provided in input data file"
+            logging.critical("Required worksheet 'E-V-A-S' is not provided in input data file")
         if 'Evaporation Data' in Input_Data_File.sheetnames:
             self.Monthly_Evap_Data = Excel_Data_Import(self.name, Input_Data_File, 'Evaporation Data',
                                                        1, 12, max_distinct_data_types=None,
@@ -178,8 +179,8 @@ class Reservoir(Storage_Element):
                 if type(self.Initial_Storage) in [int, float, long]:
                     pass  # If user specifies a valid number, proceed.
                 else:
-                    print "Error: Initial reservoir water storage value %s for Reservoir %s is not valid" % (
-                    self.Initial_Storage, self.name)
+                    logging.critical("Initial reservoir water storage value {0} for Reservoir {1} is not "
+                                     "valid".format(self.Initial_Storage, self.name))
             else:
                 if self.Act_Stor_Elev is not None:
                     # Set time zero value. Default initial (time = 0) water storage (m^3) in reservoir is equal to
@@ -202,8 +203,8 @@ class Reservoir(Storage_Element):
                 if type(self.Initial_Sediment_Mass) in [int, float, long]:
                     pass  # If user specifies a valid number, proceed.
                 else:
-                    print "Error: Initial reservoir deposited sediment value %s for Reservoir %s is not valid" % (
-                    self.Initial_Sediment_Mass, self.name)
+                    logging.critical("Initial reservoir deposited sediment value {0} for Reservoir {1} is not "
+                                  "valid".format(self.Initial_Sediment_Mass, self.name))
             else:
                 self.Initial_Sediment_Mass = 0
             if self.density_SS > 0:
@@ -216,7 +217,8 @@ class Reservoir(Storage_Element):
                 # A number is specified, but make sure it is <=1.
                 if self.Sed_Trapping_Curve_Spec > 1 or self.Sed_Trapping_Curve_Spec < 0:
                     self.Sed_Trapping_Curve_Spec = 0  # if invalid value specified, set default trapping efficiency = 0
-                    print "Error: Invalid constant trapping efficiency fraction specified for reservoir %s" % self.name
+                    logging.critical("Invalid constant trapping efficiency fraction specified for reservoir {0}".format(
+                        self.name))
             elif self.Sed_Trapping_Curve_Spec in ["L", "M", "H"]:
                 if self.Sed_Trapping_Curve_Spec == "L":
                     self.m_br = 3
@@ -268,7 +270,8 @@ class Reservoir(Storage_Element):
                 self.capacity_active_reservoir[0] = self.Active_Storage
                 self.capacity_dead_reservoir[0] = self.Dead_Storage
             else:
-                print "Error: no active storage capacity value provided for reservoir %s in Reservoir Specifications worksheet for" % self.name
+                logging.critical("No active storage capacity value provided for reservoir {0} in Reservoir " \
+                               "Specifications worksheet for".format(self.name))
 
             # Assign Number to each Reservoir Operations Goal Type, and set defaults
             if self.Reservoir_Operations_Goal == "Meet specified daily water storage targets (m^3)":
@@ -293,7 +296,7 @@ class Reservoir(Storage_Element):
                         self.op_policy_params = direct_policy_search.Import_DPS_Preferences(input_data_file=Input_Data_File)
                         self.op_policy_params['Policy Function'] = {'Raw Parameters': np.loadtxt('RBF_Parameters.txt')}
                     except KeyError:
-                        print("Required Worksheet 'DPS' does not exist in input file.")
+                        logging.critical("Required Worksheet 'DPS' does not exist in input file.")
                 else:
                     self.op_policy_params = op_policy_params
                 # Initialize DPS-relevant arrays
@@ -337,9 +340,9 @@ class Reservoir(Storage_Element):
                     self.STORAGE_TARGET[0] = Matrix_Interpolation(self.name, self.E_V_A, "elevation", "storage",
                                                                   self.ELEVATION_TARGET[0])
                 else:
-                    print "Error: worksheet 'Elevation Target Recurring' is not provided in input data file, " \
-                          "but is required given user specifications for reservoir operations related to Reservoir " \
-                          "%s" % self.name
+                    logging.critical("Worksheet 'Elevation Target Recurring' is not provided in input data file, "
+                                     "but is required given user specifications for reservoir operations related to  "
+                                     "Reservoir {0}".format(self.name))
             if self.Reservoir_Operations_Goal_ID == 1:
                 if 'Storage Volume Target' in Input_Data_File.sheetnames:
                     self.STORAGE_TARGET = Excel_Data_Import(self.name, Input_Data_File,
@@ -351,9 +354,9 @@ class Reservoir(Storage_Element):
                     self.ELEVATION_TARGET[0] = Matrix_Interpolation(self.name, self.E_V_A, "storage", "elevation",
                                                                     self.STORAGE_TARGET[0])
                 else:
-                    print "Error: worksheet 'Storage Volume Target' is not provided in input data file, " \
+                    logging.critical("worksheet 'Storage Volume Target' is not provided in input data file, " \
                           "but is required given user specifications for reservoir operations related to Reservoir " \
-                          "%s" % self.name
+                          "{0}".format(self.name))
             elif self.Reservoir_Operations_Goal == "Meet specified daily water elevation (mamsl) targets":
                 if 'Storage Volume Elevation Target' in Input_Data_File.sheetnames:
                     self.ELEVATION_TARGET = Excel_Data_Import(self.name, Input_Data_File,
@@ -365,9 +368,9 @@ class Reservoir(Storage_Element):
                     self.STORAGE_TARGET[0] = Matrix_Interpolation(self.name, self.E_V_A, "elevation", "storage",
                                                                   self.ELEVATION_TARGET[0])
                 else:
-                    print "Error: worksheet 'Storage Volume Elevation Target' is not provided in input data file, " \
+                    logging.critical("worksheet 'Storage Volume Elevation Target' is not provided in input data file, " \
                           "but is required given user specifications for reservoir operations related to Reservoir " \
-                          "%s" % self.name
+                          "{0}".format(self.name))
             elif self.Reservoir_Operations_Goal_ID == 3:
                 if 'Daily Energy Targets' in Input_Data_File.sheetnames:
                     pass
@@ -376,17 +379,17 @@ class Reservoir(Storage_Element):
                     # max_distinct_data_types = None, data_name_offset = 4, start_date = start_date)
                     # self.Energy_Release_Goal = np.zeros(T)
                 else:
-                    print "Error: worksheet 'Daily Energy Targets' is not provided in input data file, " \
+                    logging.critical("worksheet 'Daily Energy Targets' is not provided in input data file, " \
                           "but is required given user specifications for reservoir operations related to Reservoir " \
-                          "%s" % self.name
+                          "{0}".format(self.name))
             elif self.Reservoir_Operations_Goal_ID == 4:
                 if 'Daily Release Targets' in Input_Data_File.sheetnames:
                     pass  # self.Daily_Release_Target = data_processing.Excel_Data_Import(self.name, Input_Data_File, 'Daily Release Targets', 0, T,
                     # max_distinct_data_types = None, data_name_offset = 4, start_date = start_date)
                 else:
-                    print "Error: worksheet 'Daily Release Targets' is not provided in input data file, " \
+                    logging.critical("worksheet 'Daily Release Targets' is not provided in input data file, " \
                           "but is required given user specifications for reservoir operations related to Reservoir " \
-                          "%s" % self.name
+                          "{0}".format(self.name))
             elif self.Reservoir_Operations_Goal_ID == 6:
                 if 'WSE-Inflow Policy' in Input_Data_File.sheetnames:
                     self.wse_inflow_target = Excel_Data_Import(self.name, Input_Data_File,
@@ -395,8 +398,8 @@ class Reservoir(Storage_Element):
                                                                data_name_offset=3)
                     # max_distinct_data_types = None, data_name_offset = 4, start_date = start_date)
                 else:
-                    print "Error: worksheet 'WSE-Inflow Policy' is not provided in input data file, but is required " \
-                          "given user specifications for reservoir operations related to Reservoir %s" % self.name
+                    logging.critical("worksheet 'WSE-Inflow Policy' is not provided in input data file, but is required " \
+                          "given user specifications for reservoir operations related to Reservoir {0}".format(self.name))
 
             # Sediment management
             if self.Perform_Flushing == 'Yes':
@@ -449,7 +452,7 @@ class Reservoir(Storage_Element):
                 self.hydropower_head_average = np.zeros(T)  # Computes average hydropower head. Only need if dam produces hydropower.
                 self.Max_MW_Turbine_Flow = np.zeros(T)  # The maximum flow (m^3/s) allowed for a certain water level elevation such that the MW capacity of plant is not exceeded. Only need if dam produces hydropower.
         else:
-            print "Error: required worksheet 'Reservoir Specifications' is not provided in input data file"
+            logging.critical("required worksheet 'Reservoir Specifications' is not provided in input data file")
 
         if 'Tailwater Rating Curve' in Input_Data_File.sheetnames:
             self.Tailwater_Rating_Curve = Excel_Data_Import(self.name, Input_Data_File, 'Tailwater Rating Curve', 2, 2,

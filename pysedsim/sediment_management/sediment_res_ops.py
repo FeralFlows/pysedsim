@@ -11,6 +11,7 @@ the common behavior described here.
 '''
 
 from __future__ import division  # This ensures result of quotient of two integers will be a float, not an integer. (e.g., 1/4 = 0.25, not 0)
+import logging
 # from outlet import Outlet
 
 class Sediment_Res_Ops:

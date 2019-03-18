@@ -11,13 +11,13 @@ which requires no inputs when being called in deterministic mode.
 
 # Imports
 import numpy as np
-import pysedsim
 from pysedsim.data_processing.data_processing import Op_Sys_Folder_Operator
 from pysedsim.data_processing.data_processing import Determine_Num_Scenarios
 from pysedsim.data_processing.data_processing import Load_Input_File
 import pysedsim.optimization.direct_policy_search
 import os
 import platform
+import logging
 
 # Load in user-specified optimization assumptions from input file, which first must be located using its path that is
 # stored in a top level input file. This should be done only once for the entire optimization.
@@ -190,7 +190,7 @@ def Optimization_DPS_Borg(file_name = 'PySedSim_Input_Specifications.csv'):
                 f2.write("#")
                 f2.close()
 
-                print("Seed %s complete") %j
+                logging.info("Seed {0} complete".format(j))
 
         # All seeds for this scenario are complete. Now generate reference set if user desires.
         if Borg_dict['ref_set_yes_no'] == 'Yes':

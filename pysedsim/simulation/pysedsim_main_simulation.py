@@ -14,6 +14,7 @@ simulated was instantiated from. The class methods actually contain the mass bal
 from pysedsim.river_basin_elements.system_element_creation import System_Object_Creation
 import pandas as pd
 import numpy as np
+import logging
 
 def SedSim_Main_Simulation(Num_Realizations, T, Input_Data_File, element_stochastic_components, SystemObjects, Element_Dict,
                            Flushing_Group_Dict, Stochastic_Sim, Parameter_Input_Dictionary, simulation_dates_no_leap,
@@ -304,6 +305,6 @@ def SedSim_Main_Simulation(Num_Realizations, T, Input_Data_File, element_stochas
             if Simulation_mode == 'debug':
                 Output_Object_Dict[rz][element] = SystemObjects[element]
 
-        print("Simulation Realization %s Complete.") % (rz+1)
+        logging.info("Simulation Realization {0} Complete.".format((rz+1)))
 
     return state_list_excel, Time_Series_Output_Dictionary, Output_Object_Dict

@@ -16,6 +16,7 @@ import numpy as np
 from pysedsim.river_basin_elements.storage_element import Storage_Element
 from pysedsim.data_processing.data_processing import *
 import math
+import logging
 
 class Channel(Storage_Element):
     def __init__(self, name, T, Input_Data_File, Element_Sub_Dict, stochastic_components=None):
@@ -116,8 +117,8 @@ class Channel(Storage_Element):
             if self.sed_alpha >= 0 and self.sed_beta >= 0:
                 pass
             else:
-                print "Error: Sediment carrying capacity parameters not properly specified for element %s in Reach " \
-                      "Specifications worksheet" % self.name
+                logging.critical("Sediment carrying capacity parameters not properly specified for element " \
+                                   "{0} in Reach Specifications worksheet".format(self.name))
         elif self.calibration_preference == "Sediment mass out (kg) = Sediment mass in (kg)":
             self.calibration_preference = 3  # Sediment production parameters are not needed
             self.sed_alpha = 0  # Set alpha = beta = 0.
@@ -153,10 +154,10 @@ class Channel(Storage_Element):
                 sum(86400 * np.power(self.Q_out_unreg_for_param_calib, (self.sed_beta + 1))) / (
                 self.T / 365))  # Perform calibration
             else:
-                print "Error: Two errors are possible (1) Sediment calibration requested for channel element %s, " \
-                      "but no cumulative sediment load exists for this channel segment, per Sediment Loads worksheet. " \
-                      "Or (2): No exponent value is provided for the carrying capacity calculation in the Reach " \
-                      "specifications worksheet." % self.name
+                logging.critical("Two errors are possible: (1) Sediment calibration requested for channel element "
+                                 "{0}, but no cumulative sediment load exists for this channel segment, per Sediment "
+                                 "Loads worksheet. Or (2): No exponent value is provided for the carrying capacity "
+                                 "calculation in the Reach specifications worksheet.".format(self.name))
                 self.sed_alpha = 0  # No annual sediment load specified. Set alpha = beta = 0.
                 self.sed_beta = 0  # No annual sediment load specified. Set alpha = beta = 0.
 

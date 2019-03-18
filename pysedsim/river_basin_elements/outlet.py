@@ -15,6 +15,7 @@ import numpy as np
 from pysedsim.data_processing.data_processing import *
 import calendar  # Used to determine number of days in a given month
 from pysedsim.data_processing.matrix_interpolation import Matrix_Interpolation
+import logging
 
 # Ideas:
 # Since the imports here (openpyxl modules) get executed every time this file gets imported in reservoir.py, you should just feed in the entire list of reservoirs here, maybe.

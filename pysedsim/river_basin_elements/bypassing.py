@@ -14,6 +14,7 @@ from __future__ import division
 import numpy as np
 from pysedsim.data_processing.data_processing import *
 from pysedsim.river_basin_elements.storage_element import Storage_Element
+import logging
 
 class Bypass_Structure(Storage_Element):
     """An instance is a Bypass Structure."""
@@ -49,7 +50,8 @@ class Bypass_Structure(Storage_Element):
                                   data_name_offset = None)  # Optional worksheet
         else:
             self.error = 1
-            print "Error: Sediment management of type %s does not have a corresponding and correctly named worksheet in the input file." % self.Sed_Mgmt_Type
+            logging.error("Sediment management of type {0} does not have a corresponding and correctly named " \
+                    "worksheet in the input file.".format(self.Sed_Mgmt_Type))
 
     def Bypass_Flow_Allocation(self, t):
         # This method allocates the element outflow to each of the elements downstream of the bypass. Will be sent to downstream junction

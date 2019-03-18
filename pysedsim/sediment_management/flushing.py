@@ -14,6 +14,7 @@ from pysedsim.data_processing.data_processing import *
 from datetime import timedelta  # Used to add days/months/years to a datetime object
 from datetime import datetime
 from pysedsim.data_processing.matrix_interpolation import Matrix_Interpolation
+import logging
 
 class Flushing(Sediment_Res_Ops):
     '''
@@ -78,8 +79,8 @@ class Flushing(Sediment_Res_Ops):
 														  data_name_offset=2)
         else:
             self.error = 1
-            print "Error: Sediment management of type %s does not have a corresponding and correctly named worksheet " \
-                  "in the input file." % self.Sed_Mgmt_Type
+            logging.critical("Sediment management of type {0} does not have a corresponding and correctly named "
+                             "worksheet in the input file.".format(self.Sed_Mgmt_Type))
 
         # Unpack flushing optimization preferences. User is not required to use all possible flushing optimization
         # variables (frequency, time of year, and trigger inflow), so here we unpack only those variables the user

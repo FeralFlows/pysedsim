@@ -21,6 +21,7 @@ import numpy as np
 import platform  # Purpose: tells you whether your computer/cluster is windows or linux.
 import csv
 import itertools
+import logging
 
 def Determine_Num_Scenarios(file_name='PySedSim_Input_Specifications.csv'):
     '''
@@ -48,7 +49,8 @@ def Determine_Num_Scenarios(file_name='PySedSim_Input_Specifications.csv'):
     simulation_titles_list = simulation_titles_list.split(', ')  # list of scenarios to be simulated
     num_scenarios = len(simulation_titles_list)  # number of scenarios in above list
     if num_scenarios == 0:
-        print("Error: Specify scenario name(s) in top-level input file (e.g., PySedSim_Input_Specifications.csv")
+        logging.critical("User must specify scenario name(s) in top-level input file (e.g., "
+                      "PySedSim_Input_Specifications.csv")
     Monte_Carlo_Parameters_File_List = imported_specs[3]
     Monte_Carlo_Parameters_File_List = Monte_Carlo_Parameters_File_List.split(', ')
 
@@ -808,7 +810,7 @@ def Export_Simulation_Output(export_file_type, Time_Series_Output_Dictionary, st
 
     if export_file_type in ['xls', 'xlsx']:
         # This section is no longer fully functional.
-        print("Now beginning data export to Excel")
+        logging.info("Now beginning data export to Excel")
         # Export dataframes iteratively into excel sheets
         export_full = 0  # If = 0, then export only some objects/states dataframes; if =1 then export ALL.
         if export_full == 1:
@@ -824,9 +826,9 @@ def Export_Simulation_Output(export_file_type, Time_Series_Output_Dictionary, st
                 # Export DataFrame to Excel
                 for state in state_list_excel[keys]:
                     Time_Series_Output_Dictionary[keys][state].to_excel(writer[keys], state)
-                    print('Exporting %s state variable time series in %s workbook') % (state, keys)
+                    logging.info('Exporting {0} state variable time series in {1} workbook'.format(state, keys))
                 writer[keys].save()
-                print('Saving %s workbook') % (keys)
+                logging.info('Saving {0} workbook'.format(keys))
         else:
             wb1 = {}
             writer = {}
@@ -840,12 +842,12 @@ def Export_Simulation_Output(export_file_type, Time_Series_Output_Dictionary, st
                 # Export DataFrame to Excel
                 for state in selected_vars_for_export:
                     Time_Series_Output_Dictionary[keys][state].to_excel(writer[keys], state)
-                    print('Exporting %s state variable time series to %s workbook') % (state, keys)
+                    logging.info('Exporting {0} state variable time series to {1} workbook'.format(state, keys))
                 writer[keys].save()
-                print('Saving %s workbook') % (keys)
-        print("Data Export Complete")
+                logging.info('Saving {0} workbook'.format(keys))
+        logging.info("Data Export Complete")
     elif export_file_type in ['csv']:
-        print("Now beginning data export to .csv files")
+        logging.info("Now beginning data export to .csv files")
         simulation_output_location = main_output_file_dir + os_fold_op + simulation_title + os_fold_op
         if policy_folder_name is not '':
             simulation_output_location += policy_folder_name + os_fold_op
@@ -869,7 +871,7 @@ def Export_Simulation_Output(export_file_type, Time_Series_Output_Dictionary, st
                     Time_Series_Output_Dictionary[sys_locs][vars].to_csv(os.path.join(file_path, filename_processor))
     # Produce a README .txt file that describes each of the variables that has been exported.
     #output_variable_description(var_sub_list)
-    print("Finished exporting data to .csv files.")
+    logging.info("Finished exporting data to .csv files.")
 
 def cluster_output_processing(n_procs, var_sub_list, simulation_title, Locations_to_Import, main_output_file_dir,
                               policies=None):
@@ -1098,7 +1100,7 @@ def Import_Simulation_Output(Sims_to_Import, Locations_to_Import, var_sub_list, 
                                                 [TSID[sims][locs][vars], TSID_Temp[sims][locs][vars]], axis=1)
         scenario_counter += 1
 
-    print("Data Import is completed.")
+    logging.info("Data Import is completed.")
     # Return is conditional. Number of realizations/years cannot be provided if the TSID only represents one of many
     # ensemble members of a stochastic simulation:
     if proc_num is not '':

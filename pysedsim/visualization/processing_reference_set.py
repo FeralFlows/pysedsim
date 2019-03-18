@@ -30,6 +30,7 @@ import pysedsim.optimization.direct_policy_search
 import itertools
 from pysedsim.data_processing.data_processing import Load_Input_File
 import matplotlib.patheffects as pe
+import logging
 
 def Reference_Set(input_file_name = 'PySedSim_Input_Specifications.csv', ref_set_file_name = 'pysedsim_ref_set',
                   file_type = '.ref', objs_to_process = None, inline_optimization = None, eval_runtime_perf='No',

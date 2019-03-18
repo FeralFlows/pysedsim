@@ -8,6 +8,7 @@ external optimization model (e.g., Borg) as objective function values.
 # Import libraries
 import pandas as pd
 import copy
+import logging
 
 def Performance(output_dict, Sim_Dur, opt_dict=None, main_output_file_dir=None, sim_title=None):
     '''
@@ -25,6 +26,8 @@ def Performance(output_dict, Sim_Dur, opt_dict=None, main_output_file_dir=None, 
     :param output_dict: output dictionary of data frames produced by PySedSim (stores variables user requests to export)
     :return: objs (a list of objective function values)
     '''
+
+    logging.info('Evaluating simulated performance across system elements')
 
     # If this function is being used as part of an optimization routine, unpack optimization preferences/parameters.
     if opt_dict is not None:

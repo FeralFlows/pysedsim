@@ -13,6 +13,7 @@ from __future__ import division  # This ensures result of quotient of two intege
 from pysedsim.sediment_management.sediment_res_ops import Sediment_Res_Ops
 import numpy as np
 from pysedsim.data_processing.data_processing import *
+import logging
 
 class Dredging(Sediment_Res_Ops):
 
@@ -39,7 +40,8 @@ class Dredging(Sediment_Res_Ops):
             self.Dredging_Data_Import = Excel_Data_Import(element_name, Input_Data_File, 'General Sediment Removal', 2, 5, max_distinct_data_types = None, data_name_offset = 2) # Optional worksheet
         else:
             self.error = 1
-            print "Error: Sediment management of type %s does not have a corresponding and correctly named worksheet in the input file." % self.Sed_Mgmt_Type
+            logging.critical("Sediment management of type {0} does not have a corresponding and correctly named "
+                             "worksheet in the input file.".format(self.Sed_Mgmt_Type))
 
         # User-specified dredging data will be stored in a dictionary called Specs
         self.Specs = {}  # Initialize Dictionary
