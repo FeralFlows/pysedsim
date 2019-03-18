@@ -154,7 +154,7 @@ class PySedSim():
 
 		for i in range(num_scenarios):
 			# Initialize logging file
-			logger.info('Beginning simulation scenario: ' + simulation_titles_list[i])
+			logging.info('Beginning simulation scenario: ' + simulation_titles_list[i])
 			# In case looping through scenarios, re-initiate start_stop
 			if parallelize is None:
 				self.start_stop = None
