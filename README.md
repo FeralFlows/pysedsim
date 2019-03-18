@@ -25,6 +25,52 @@ The source code is written in Python. PySedSim includes four core model features
 
 # <a name="InstallGuide"></a>Getting Started
 
+This section provides a very brief guide to get started with PySedSim. Much more detailed instructions appear in the PySedSim user manual, especially regarding the preparation of input data to the model. The user manual is available in the /docs directory of this repository. Users may wish to use the PySedSim example cases provided in the /example directory to test the steps below, as well as to see how to create the input model files for your own model application.
+
+1.	Download and install Python 2. (Note: v. 2.7 or later is suggested for Python 2; PySedSim has not been tested with Python 3). 
+
+You can get a free distribution of Python and most of its most popular packages (libraries) for scientific computing through Anaconda: https://www.continuum.io/downloads.
+
+2. Create a directory on your workstation into which to clone PySedSim. We will refer to this as pysedsim_main.
+
+3. We recommend conducting the clone process (discussed in the following steps) from the command line. If you are unfamiliar working from the command line, we suggest you downloading Git for free here: https://git-scm.com/downloads. This Git download will come with “git bash”, from which you can attempt the “git clone” operation described below. 
+
+4. This repository uses the Git Large File Storage (LFS) extension (see https://git-lfs.github.com/ for details). Please install GitLFS and run the following command in your pysedsims_main directory before cloning if you do not already have Git LFS initialized: 
+
+>>git lfs install.
+
+5. Clone PySedSim into your pysedsim_main directory by entering the following command in a prompt (e.g., Git bash):
+
+>> git clone https://github.com/FeralFlows/PySedSim.git
+
+The above command should initiate a download of PySedSim files, including large files stored with Git LFS. If none of the large files download in the example/ directory, windows users have have better luck with:
+
+>> git lfs clone https://github.com/FeralFlows/PySedSim.git
+
+6. From the directory you cloned PySedSim into, run:
+
+>>python setup.py install . 
+
+This will install PySedSim as a Python package on your machine and install all of the needed dependencies. If you receive any errors that certain packages are not installed, we recommend installing these packages through the Anaconda command prompt by typing the command below (inserting the correct package where “package_name” appears”).
+
+>>pip install package_name
+
+7. Run the provided example simulation(s).
+
+We recommend first running the example formulations provided out-of-the-box in the cloned repository. To do this, change directories to a formulation’s directory (e.g., formulation 1):
+
+>>cd pysedsim_sims_main/example/formulation_1
+
+Then, run pysedsim from the command prompt with the following command:
+
+>>python formuation_1.py
+
+Check the output directories, and log file, to confirm that the simulation has run correctly.
+
+8. Setup and run your own simulation.
+
+We refer you to the user manual in this repository's /docs directory for images and examples of how to prepare and correctly format input files for your own PySedSim application.
+
 # <a name="Pubs"></a>Publications using PySedSim
 
 <strong> Peer-reviewed Publications: </strong>
