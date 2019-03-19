@@ -5,9 +5,9 @@
 
 License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 
-Purpose: This file houses a top-level PySedSim function that conducts all processes necessary to run a simulation, from data import,
-to network and system element creation, to simulation and export of results. Most of the work is done with imported functions. This
-file contains no function definitions.
+Purpose: This file houses a top-level PySedSim function that conducts all processes necessary to run a simulation, from
+data import to network and system element creation, to simulation and export of results. Most of the work is done
+with imported functions. This file contains no function definitions.
 
 """
 
@@ -31,7 +31,8 @@ import numpy as np
 class PySedSim():
 	'''
 
-	An Open Source Reservoir and Sediment Simulation Screening Framework for Identifying and Evaluating Dam Siting, Design, and Operation Alternatives.
+	An Open Source Reservoir and Sediment Simulation Screening Framework for Identifying and Evaluating Dam Siting,
+	Design, and Operation Alternatives.
 
     '''
 
@@ -55,8 +56,8 @@ class PySedSim():
 		(2) simulation_mode [OPTIONAL] (Options: 'regular' or 'debug'. 'debug' stores all variable output temporarily and
 		uses more RAM. Default: 'regular'.).
 
-		(3) start_stop [OPTIONAL] is a list containing the start and stop integers defining the range of simulations to be
-		conducted on a given processor (either through distributed computing over processors on a single computer,
+		(3) start_stop [OPTIONAL] is a list containing the start and stop integers defining the range of simulations to
+		be conducted on a given processor (either through distributed computing over processors on a single computer,
 		or through many processors on a cluster). Example of list: [8, 15]. This would mean 7 simulations are to be
 		conducted. This 7 simulations may represent a subset of simulations being conducted as part of a monte carlo (
 		i.e., this processor is being asked to conduct 7 simulations out of 1000 simulations).
@@ -68,8 +69,8 @@ class PySedSim():
 
 		(7) scenario_name: Optional. List containing one string that represents the name of the current scenario (
 		internal to optimization or post-optimization) from which this pysedsim function is being called for purposes of
-		policy reevaluation. Example: ['Scenario 1']. Ensures that if pysedsim is called from within an optimzation loop (
-		over multiple scenarios) for purposes of re-evaluating policies from a reference set, only the current
+		policy reevaluation. Example: ['Scenario 1']. Ensures that if pysedsim is called from within an optimzation loop
+		(over multiple scenarios) for purposes of re-evaluating policies from a reference set, only the current
 		optimization scenario gets re-evalutad here, rather than all scenarios listed in the input file.
 
 		(8) re_eval: List of preferences related to reevaluation of operating policies from the reference set,
@@ -116,7 +117,7 @@ class PySedSim():
 	def execute_simulation(self, borg_dict=None, dps_dict=None, decision_vars=None):
 		'''
 
-		:param borg_dict: an optimization dictionary. This is defined automatically in the optimization_pysedsim.py module.
+		:param borg_dict: an optimization dictionary. Defined automatically in the optimization_pysedsim.py module.
 		:param decision_vars: decision_vars (optional) is a list of decision variable values specified by an external
 		optimization model (e.g., Borg) in the form of a numpy array. Currently, the only thing this input can be used
 		for is to populate the parameters for a RBF-type reservoir operating policy.
@@ -129,7 +130,7 @@ class PySedSim():
 		self.decision_vars = decision_vars
 
 		if self.borg_dict is not None:
-			# An optimization is being performed. Scenarios can be looped through in optimization_pysedsim(), but not here given optimization
+			# An optimization is being performed.
 			# is being performed.
 			opt_dict = self.borg_dict['opt_dict']
 			self.num_scenarios = 1
@@ -163,7 +164,7 @@ class PySedSim():
 				self.start_stop = None
 			if export_data_scenario is None:
 				export_data = None
-			start_time = time.time()  # Keep track of PySedSim model execution time
+			self.start_time = time.time()  # Keep track of PySedSim model execution time
 			simulation_title = self.simulation_titles_list[i]  # Feed in a string as the simulation title
 			monte_carlo_file = self.monte_carlo_file_list[i]
 			# Import simulation preferences from user-provided input file.
@@ -206,8 +207,6 @@ class PySedSim():
 																										   Sampled_Parameter_Dict,
 																										   Synthetic_Inflow_dataframe_name_LIST,
 																										   Synthetic_Inflows_dictionary, op_policy_params=self.dps_dict)
-
-			logging.info("--- Simulation(s) Complete in {0} seconds ---".format(time.time() - start_time))
 
 			# Export output data if user indicates this should be conducted, or if pysedsim is being called as part of a
 			# re-evaluation process, in which case output is (assumed to be) desired to be stored.
@@ -484,7 +483,7 @@ class PySedSim():
 
 	def cleanup(self):
 		"""Close log files."""
-		logging.info("End of simulation")
+		logging.info("--- Simulation(s) Complete in {0} seconds ---".format(time.time() - self.start_time))
 
 		# Remove logging handlers - they are initialized at the module level, so this prevents duplicate logs from
 		# being created if pysedsim is run multiple times.
