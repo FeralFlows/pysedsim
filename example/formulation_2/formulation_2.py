@@ -2,16 +2,15 @@
 
 from __future__ import division  # This ensures result of quotient of two integers will be a float, not an integer.
 import sys
-sys.path.append('E:\PySedSim\Model Files\PySedSim Files\PySedSim_Git_Repository')
-import processing_reference_set
-import optimization_pysedsim
+from pysedsim.visualization.processing_reference_set import *
+from pysedsim.optimization.optimization_pysedsim import *
 
 # Run optimization using the serial implementation of the Borg MOEA with the following function call:
 optimization_pysedsim.Optimization_DPS_Borg(file_name = 'formulation_2_serial.csv')
 
 # Alternatively, run optimization using the master-slave (parallelized) implementation of the Borg MOEA. This step must
 #  be executed on a Linux cluster with the following function call:
-optimization_pysedsim.Optimization_DPS_Borg(file_name = 'formulation_2_parallelized.csv')
+optimization_pysedsim.Optimization_DPS_Borg(file_name = 'formulation_2_parallel.csv')
 
 # Create reference set file (.ref) from all random seeds (.set files).
 [Borg_dict, DPS_dict] = processing_reference_set.Reference_Set(input_file_name = 'formulation_2.csv')

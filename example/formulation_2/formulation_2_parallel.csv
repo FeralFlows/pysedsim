@@ -1,0 +1,6 @@
+File Names/Locations and Preferences,,Notes
+Simulation Title,Sambor_EA_formulation_2_parallel,Required
+Input file folder path,input,"Required; Be sure to adjust so convention reflects operating system in use, e.g. './Output_Storage/Scenarios_Input_Data'  in Linux"
+Input file name,,"If blank, will append "" - Simulation_Title.xlsx"" to ""PySedSim_Input_File"""
+Parameter ranges for Monte-Carlo,Parameters_for_MC_Stochastic.xlsx,
+Simulation output file path,output,"Required; Be sure to adjust so convention reflects operating system in use, e.g. './Output_Storage' in Linux to store directly in sub-folder"
