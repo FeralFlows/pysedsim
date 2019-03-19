@@ -1,7 +1,7 @@
 import numpy as np
 from pysedsim.data_processing.data_processing import Load_Input_File
 from pysedsim.data_processing.data_processing import Excel_Data_Import
-import pysedsim.visualization.processing_reference_set
+from pysedsim.visualization.processing_reference_set import *
 import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib.backends import backend_agg as agg
@@ -388,7 +388,7 @@ def DPS_Policy_Plotting(DPS_dict, dps_plt_dict, objs_to_plot, ref_set_pref_dict)
 
     subplot_rows = int(math.sqrt(slice_num))  # number of subplot rows in figure
     subplot_cols = int(math.sqrt(slice_num))  # number of subplot columns in figure
-    [ref_set_array, objective_values, dec_var_values] = processing_reference_set.Initial_Processing(num_objs,
+    [ref_set_array, objective_values, dec_var_values] = Initial_Processing(num_objs,
                                                                                                     DPS_dict['n_vars'],
                                                                                                     ref_set_file_name,
                                                                                                     parse_objs,
