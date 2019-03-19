@@ -26,6 +26,7 @@ from pysedsim.data_processing.performance import Performance
 import logging
 import os
 import sys
+import numpy as np
 
 class PySedSim():
 	'''
@@ -35,8 +36,7 @@ class PySedSim():
     '''
 
 	def __init__(self, file_name = 'PySedSim_Input_Specifications.csv', Simulation_mode = 'regular', start_stop =None,
-					 parallel_label = None, borg_dict = None, dps_dict = None, decision_vars = None, scenario_name=None,
-					 re_eval = None, policy_name=None):
+					 parallel_label = None, scenario_name=None, re_eval = None, policy_name=None):
 		"""
 		Initialize pysedsim
 
@@ -66,12 +66,6 @@ class PySedSim():
 		carlo simulation, this could be the rank of the processor on which the pysedsim_wrapper calling this function is
 		running, so that the distributed output from the processors can be aggregated into a single file.
 
-		(5) Borg_dict is an optimization dictionary. This is defined automatically in the optimization_pysedsim.py module.
-
-		(6) decision_vars (optional) is a list of decision variable values specified by an external optimization model (
-		e.g., Borg) in the form of a numpy array. Currently, the only thing this input can be used for is to populate the
-		parameters for a RBF-type reservoir operating policy.
-
 		(7) scenario_name: Optional. List containing one string that represents the name of the current scenario (
 		internal to optimization or post-optimization) from which this pysedsim function is being called for purposes of
 		policy reevaluation. Example: ['Scenario 1']. Ensures that if pysedsim is called from within an optimzation loop (
@@ -90,7 +84,7 @@ class PySedSim():
 		2. If user has connected PySedSim to an external optimization model, wherein PySedSim() is the "function
 		evaluation", then PySedSim returns objs, the objective function values.
 
-		Example function call:
+		Example instantiation:
 		(1) PySedSim(file_name = 'PySedSim_Input_File.csv', simulation_mode = 'debug')
 		(2) PySedSim()
 		"""
@@ -99,12 +93,17 @@ class PySedSim():
 		self.Simulation_mode = Simulation_mode
 		self.start_stop = start_stop
 		self.parallel_label = parallel_label
-		self.borg_dict = borg_dict
-		self.dps_dict = dps_dict
-		self.decision_vars = decision_vars
 		self.scenario_name = scenario_name
 		self.re_eval = re_eval
 		self.policy_name = policy_name
+		# Import entire file "PySedSim_Input_Specification.csv", then load specific information to variables
+		[self.num_scenarios, self.simulation_titles_list, self.imported_specs, self.main_input_files_dir,
+		 self.main_output_file_dir, self.monte_carlo_file_list, self.external_mc_data] = Determine_Num_Scenarios(
+			self.file_name)
+		# create output directory
+		self.make_dir(self.main_output_file_dir)
+		# Initialize logging file
+		self.init_log(self.main_output_file_dir)
 
 
 	@staticmethod
@@ -114,31 +113,35 @@ class PySedSim():
 			os.makedirs(pth)
 
 
-	def execute(self):
-		# Import entire file "PySedSim_Input_Specification.csv", then load specific information to variables
-		[num_scenarios, simulation_titles_list, imported_specs, main_input_files_dir, main_output_file_dir,
-		 monte_carlo_file_list, external_mc_data] = Determine_Num_Scenarios(self.file_name)
+	def execute_simulation(self, borg_dict=None, dps_dict=None, decision_vars=None):
+		'''
 
-		# create output directory
-		self.make_dir(main_output_file_dir)		 
-		 
-		# Initialize logging file
-		self.init_log(main_output_file_dir)
+		:param borg_dict: an optimization dictionary. This is defined automatically in the optimization_pysedsim.py module.
+		:param decision_vars: decision_vars (optional) is a list of decision variable values specified by an external
+		optimization model (e.g., Borg) in the form of a numpy array. Currently, the only thing this input can be used
+		for is to populate the parameters for a RBF-type reservoir operating policy.
+		:param dps_dict: dictionary defining direct policy search preferences
+		:return:
+		'''
+
+		self.borg_dict = borg_dict
+		self.dps_dict = dps_dict
+		self.decision_vars = decision_vars
 
 		if self.borg_dict is not None:
 			# An optimization is being performed. Scenarios can be looped through in optimization_pysedsim(), but not here given optimization
 			# is being performed.
 			opt_dict = self.borg_dict['opt_dict']
-			num_scenarios = 1
-			simulation_titles_list = [opt_dict['Scenario Name']]
+			self.num_scenarios = 1
+			self.simulation_titles_list = [opt_dict['Scenario Name']]
 			export_data = 'No'  # Do not dump output to .csv file in optimization setting.
 			export_data_scenario = 'No'  # Ensures export_data is 'No' for all scenarios being looped through.
 		else:
 			# Optimization will not take place.
 			opt_dict = None
 			if self.scenario_name is not None:
-				num_scenarios = 1
-				simulation_titles_list = self.scenario_name
+				self.num_scenarios = 1
+				self.simulation_titles_list = self.scenario_name
 			export_data_scenario = None  # Data export preferences for particular scenario in chain, to prevent carryover.
 		if self.dps_dict is not None:
 			self.dps_dict['Policy Function'] = {'Raw Parameters': self.decision_vars[0:self.dps_dict['n_vars']]}
@@ -152,28 +155,28 @@ class PySedSim():
 		else:
 			parallelize = None
 
-		for i in range(num_scenarios):
+		for i in range(self.num_scenarios):
 			# Initialize logging file
-			logging.info('Beginning simulation scenario: ' + simulation_titles_list[i])
+			logging.info('Beginning scenario: ' + self.simulation_titles_list[i])
 			# In case looping through scenarios, re-initiate start_stop
 			if parallelize is None:
 				self.start_stop = None
 			if export_data_scenario is None:
 				export_data = None
 			start_time = time.time()  # Keep track of PySedSim model execution time
-			simulation_title = simulation_titles_list[i]  # Feed in a string as the simulation title
-			monte_carlo_file = monte_carlo_file_list[i]
+			simulation_title = self.simulation_titles_list[i]  # Feed in a string as the simulation title
+			monte_carlo_file = self.monte_carlo_file_list[i]
 			# Import simulation preferences from user-provided input file.
 			[export_data, export_file_type, var_sub_list, element_export_list,
 			 Input_Data_File, T, Sim_Dur, Stochastic_Sim, Num_Realizations, simulation_dates,
-			 simulation_dates_no_leap, Col_Names, Monte_Carlo_Parameters_File_Name, external_mc_data, simulation_title,
+			 simulation_dates_no_leap, Col_Names, Monte_Carlo_Parameters_File_Name, self.external_mc_data, simulation_title,
 			 start_stop, Sampled_Parameter_Dict, Synthetic_Inflow_dataframe_name_LIST,
-			 Synthetic_Inflows_dictionary] = Import_Simulation_Preferences(imported_specs, simulation_title,
-																		   main_input_files_dir, re_eval=self.re_eval,
+			 Synthetic_Inflows_dictionary] = Import_Simulation_Preferences(self.imported_specs, simulation_title,
+																		   self.main_input_files_dir, re_eval=self.re_eval,
 																		   start_stop=self.start_stop,
 																		   export = export_data,
 																		   Monte_Carlo_Parameters_File_Name=monte_carlo_file,
-																		   external_mc_data = external_mc_data)
+																		   external_mc_data = self.external_mc_data)
 
 			# Create an initial network of reservoirs, channels, juntions, etc. that will be simulated.
 			[SystemObjects, Time_Series_Output_Dictionary, Output_Object_Dict, Element_Dict, Flushing_Group_Dict, element_stochastic_components,
@@ -181,8 +184,8 @@ class PySedSim():
 
 			if Stochastic_Sim == 1:
 				[Parameter_Input_Dictionary, element_stochastic_components, Sampled_Parameter_Dict, Synthetic_Inflow_dataframe_name_LIST,
-				 Synthetic_Inflows_dictionary] = Monte_Carlo_Import(main_input_files_dir, Col_Names, element_stochastic_components,
-																	SystemObjects["Ordered Simulation List"], external_mc_data,
+				 Synthetic_Inflows_dictionary] = Monte_Carlo_Import(self.main_input_files_dir, Col_Names, element_stochastic_components,
+																	SystemObjects["Ordered Simulation List"], self.external_mc_data,
 																	Monte_Carlo_Parameters_File_Name, simulation_dates,
 																	simulation_dates_no_leap, Num_Realizations, Sampled_Parameter_Dict,
 																	Synthetic_Inflow_dataframe_name_LIST, Synthetic_Inflows_dictionary,
@@ -209,9 +212,9 @@ class PySedSim():
 			# Export output data if user indicates this should be conducted, or if pysedsim is being called as part of a
 			# re-evaluation process, in which case output is (assumed to be) desired to be stored.
 			if export_data == 'Yes' or self.scenario_name is not None:
-				Export_Simulation_Output(export_file_type, Time_Series_Output_Dictionary, state_list_excel, main_output_file_dir,
-										 simulation_title, var_sub_list, rank = self.parallel_label,
-										 policy_name=self.policy_name)
+				Export_Simulation_Output(export_file_type, Time_Series_Output_Dictionary, state_list_excel,
+										 self.main_output_file_dir, simulation_title, var_sub_list, rank =
+										 self.parallel_label, policy_name=self.policy_name)
 
 		self.cleanup()
 
@@ -219,6 +222,239 @@ class PySedSim():
 		if opt_dict is not None:
 			objs = Performance(Time_Series_Output_Dictionary, Sim_Dur, opt_dict=opt_dict, sim_title = simulation_title)
 			return objs
+
+
+	def PySedSim_Caller(self, vars, additional_inputs):
+		'''
+        Purpose: Calls the PySedSim simulation model. Designed for use in an optimization setting. Designed to be called by
+        Borg optimization model wrapper in each function evaluation as part of a simulation-optimization experiment.
+
+        Decision variable values from Borg can either be
+        sent directly into PySedSim through the function interface (ideal for parallel function evaluations being
+        performed by Master-Slave Borg, but works for Serial Borg as well), or can be dumped into a text file (works only
+        for Serial Borg evaluations).
+
+        Args:
+            vars: A list of decision variable values from Borg
+            additional_inputs: A list of two dictionaries and the input file name. The first dictionary is a dictionary of
+            Borg preferences, and the second is a dictionary of Direct Policy Search optimization preferences.
+
+        Returns:
+            performance: objective value performance. A list of objective values, one for each of the objectives.
+        '''
+		Borg_dict = additional_inputs[0]
+		DPS_Dict = additional_inputs[1]
+		top_level_input_file_name = additional_inputs[2]
+		borg_vars = vars
+		self.os_fold = Op_Sys_Folder_Operator()
+
+		# If any variables are discrete valued (e.g., integer), re-format borg variable values to reflect.
+		for v in range(len(DPS_Dict['variable_type'])):
+			if DPS_Dict['variable_type'][v] == 'integer':
+				borg_vars[v] = int(borg_vars[v])
+
+		# Call PySedSim according to user preferences for interface.
+		if Borg_dict['link_to_borg'] == 0:
+			# Use for deterministic simulation
+			np.savetxt('RBF_Parameters.txt', borg_vars, newline=' ')  # Save policy so PySedSim can import it.
+			performance = self.execute_simulation(borg_dict=Borg_dict)
+		else:
+			# Use for stochastic simulation/optimization, particularly if being run in parallel.
+			op_policy_params = np.asarray(borg_vars)  # Cast borg output parameters as array for use in simulation.
+			performance = self.execute_simulation(borg_dict=Borg_dict, dps_dict=DPS_Dict,
+												  decision_vars=op_policy_params, file_name=top_level_input_file_name)
+		return performance
+
+
+	def execute_optimization(self, file_name='PySedSim_Input_Specifications.csv'):
+
+		'''
+
+        Purpose: Perform main Borg optimization loop through scenarios and seeds. Calls PySedSim for simulation.
+
+        Args:
+            file_name: Name of the top-level input file that indicates where input files are located, etc. Default is
+            'PySedSim_Input_Specifications.csv'. Must be the same file used for the simulation that is to be connected to
+            the optimization.
+
+        Returns:
+            Produces pareto outputs for each seed, exported to separate files in a "sets" folder created in the model
+            output location specified in the input file.
+        '''
+
+		# Import borg wrapper given optimization is to be perfored
+		from pysedsim.optimization import borg as bg
+
+		# Loop through as many optimization scenarios as user has specified
+		for j in range(self.num_scenarios):
+			simulation_title = self.simulation_titles_list[j]
+			Borg_dict = Import_Optimization_Preferences(simulation_title, self.imported_specs, self.main_input_files_dir)
+			if Borg_dict['optimization approach'] == 'DPS':
+				DPS_dict = Import_DPS_Preferences(simulation_title=simulation_title,
+												  imported_specs=self.imported_specs,
+												  main_input_files_dir=self.main_input_files_dir)
+				Borg_dict['n_vars'] = DPS_dict[
+					'n_vars']  # Store num decision variables in Borg_dict, copied from DPS_dict.
+
+			# Populate DPS input variable ranges to specify for borg
+			borg_variable_range = []
+			# Direct Policy Search Radial Basis Function Parameters:
+			for r in range(DPS_dict['RBF Specs']['Number']):
+				for m in range(DPS_dict['num_inputs']):
+					borg_variable_range.append([-1, 1])  # for normalized center
+					borg_variable_range.append([0, 1])  # for normalized radius
+				for k in range(DPS_dict['num_reservoirs']):
+					borg_variable_range.append(
+						[0, 1])  # for weights, which are normalized later on as they must sum to 1.
+
+			# Populate Flushing-related input variable ranges to specify for borg
+			try:
+				for flush_var in DPS_dict['Flushing Optimization']['Ordered input variable list']:
+					borg_variable_range.append(DPS_dict['Flushing Optimization']['Input variable'][flush_var])
+			except KeyError:
+				pass
+
+			# Compute total number of variables, which is a combination of DPS policy decision vars and flushing decision
+			#  vars.
+			Borg_dict['total_vars'] = DPS_dict['total_vars']
+
+			# Create directory in which to store optimization output
+			output_location = self.main_output_file_dir + self.os_fold + simulation_title + self.os_fold + 'sets'
+			if not os.path.exists(output_location):
+				os.makedirs(output_location)
+
+			# Set up interface with Borg for parallel function evaluation, if Borg Maser-Slave is being used, and if this
+			#  is the first optimization scenario being considered. Can't start MPI twice.
+			if Borg_dict['borg_type'] == 1 and j == 0:
+				bg.Configuration.startMPI()  # start parallelization with MPI
+
+			# Set up interface with Borg for optimization
+			for j in range(Borg_dict['nSeeds']):
+				borg = bg.Borg(Borg_dict['total_vars'], Borg_dict['n_objs'], Borg_dict['n_constrs'], PySedSim_Caller,
+							   add_pysedsim_inputs=[Borg_dict, DPS_dict, file_name])  # Create instance of Borg class
+				borg.setBounds(*borg_variable_range)  # Set decision variable bounds
+				borg.setEpsilons(*Borg_dict['epsilon_list'])  # Set epsilon values
+				runtime_filename = self.main_output_file_dir + self.os_fold + simulation_title + self.os_fold + 'sets' + self.os_fold + \
+								   'runtime_file_seed_' + str(j + 1) + '.runtime'
+				if Borg_dict['borg_type'] == 0:
+					# Run serial Borg
+					if Borg_dict['runtime_preferences']['runtime_choice'] == 'Yes':
+						result = borg.solve({"maxEvaluations": Borg_dict['num_func_evals'], "runtimeformat": 'borg',
+											 "frequency": Borg_dict['runtime_preferences']['runtime_freq'],
+											 "runtimefile": runtime_filename})
+					else:
+						result = borg.solve({"maxEvaluations": Borg_dict['num_func_evals']})
+
+				# result = borg.solve({"maxEvaluations":Borg_dict['num_func_evals']})  # Minimum is 100 in Borg
+				elif Borg_dict['borg_type'] == 1:
+					# Run parallel Borg
+					if Borg_dict['runtime_preferences']['runtime_choice'] == 'Yes':
+						result = borg.solveMPI(maxEvaluations=Borg_dict['num_func_evals'], runtime=runtime_filename,
+											   frequency=Borg_dict['runtime_preferences']['runtime_freq'])
+					else:
+						result = borg.solveMPI(maxEvaluations=Borg_dict['num_func_evals'])
+				if result:
+					# This particular seed is now finished being run in parallel. The result will only be returned from
+					# one node in case running Master-Slave Borg.
+					result.display()
+
+					# Create/write objective values and decision variable values to files in folder "sets", 1 file per seed.
+					f = open(output_location + self.os_fold + 'Borg_DPS_PySedSim' + str(j + 1) + '.set', 'w')
+					f.write('#Borg Optimization Results\n')
+					f.write('#First ' + str(Borg_dict['total_vars']) + ' are the decision variables, ' + 'last ' + str(
+						Borg_dict['n_objs']) + ' are the ' + 'objective values\n')
+					f.write('#List of objective names (in order of appearance): ' + ', '.join(
+						Borg_dict['opt_dict']['Objective Names Ordered List']) + '\n')
+					for solution in result:
+						line = ''
+						for i in range(len(solution.getVariables())):
+							line = line + (str(solution.getVariables()[i])) + ' '
+
+						for i in range(len(solution.getObjectives())):
+							line = line + (str(solution.getObjectives()[i])) + ' '
+
+						f.write(line[0:-1] + '\n')
+					f.write("#")
+					f.close()
+
+					# Create/write objective values only to files in folder "sets", 1 file per seed. Purpose is so that
+					# the file can be processed in MOEAFramework, where performance metrics may be evaluated across seeds.
+					f2 = open(output_location + self.os_fold + 'Borg_DPS_PySedSim_no_vars' + str(j + 1) + '.set', 'w')
+					for solution in result:
+						line = ''
+						for i in range(len(solution.getObjectives())):
+							line = line + (str(solution.getObjectives()[i])) + ' '
+
+						f2.write(line[0:-1] + '\n')
+					f2.write("#")
+					f2.close()
+
+					logging.info("Seed {0} complete".format(j))
+
+			# All seeds for this scenario are complete. Now generate reference set if user desires.
+			if Borg_dict['ref_set_yes_no'] == 'Yes':
+				# Ensure that this reference set processing is done only once in event this is being run in parallel.
+				# if platform.system() == 'Linux':
+				# [start, stop, rank] = parallelize_pysedsim(1)  # Distribute re-evaluation work to processors.
+				# if rank == 0:
+				[Borg_dict, DPS_dict] = Reference_Set(inline_optimization=[simulation_title, Borg_dict, DPS_dict,
+																		   self.main_output_file_dir])
+			# else:
+			# [Borg_dict, DPS_dict] = Reference_Set(inline_optimization=[simulation_title, Borg_dict, DPS_dict,main_output_file_dir])
+
+			# Re-evaluate (simulate) all of the policies from the reference set.
+			if Borg_dict['re_eval'] == 'Yes':
+				if Borg_dict['ref_set_yes_no'] == 'Yes':
+					ref_set_file_name = output_location + self.os_fold + Borg_dict['opt_output_filename']
+					[ref_set_array, objective_values, dec_var_values] = Policy_Reevaluation(
+						ref_set_file_name=ref_set_file_name, post_optimization='No', file_name=file_name,
+						dps_dict=DPS_dict,
+						borg_dict=Borg_dict, parallel=Borg_dict['parallel_choice'],
+						internal_opt_call=[Borg_dict['opt_dict']['Scenario Name']])
+				else:
+					# Do not specify a reference set file name, as user did not generate a reference set with
+					# optimization. Instead, just use the default reference set file name from the Policy_Reevaluation
+					# method.
+					[ref_set_array, objective_values, dec_var_values, dps_dict, borg_dict] = Policy_Reevaluation(
+						post_optimization='No',
+						file_name=file_name,
+						dps_dict=DPS_dict,
+						borg_dict=Borg_dict,
+						parallel=Borg_dict['parallel_choice'],
+						internal_opt_call=[Borg_dict['opt_dict']['Scenario Name']])
+
+			if Borg_dict['ref_set_plot'] == 'Yes':
+				ref_set_pref_dict = {'num_objs': Borg_dict['n_objs'], 'num_dec_vars': DPS_dict['n_vars'], 'invert': [
+					'No', 'No', 'No'], 'perc_conv': ['No', 'Yes', 'No'], 'unit_conv': [.365, 1, 1]}
+				movie_dict = {'Create Movie': 'No'}
+				plot_dict = {'Axis Range': [[0, 6000], [0, 100], [0, 8000]], 'plot_order': [1, 0, 2], '3d_plot': 'No'}
+				objs_to_plot = Borg_dict['opt_dict'][
+					'Objective Names Ordered List']  # Plot all objectives in optimization.
+				if Borg_dict['re_eval'] == 'Yes':
+					# Reference set has already been processed. Store those values in the reference set preferences dict.
+					ref_set_pref_dict['ref_set_array'] = ref_set_array
+					ref_set_pref_dict['objective_values'] = objective_values
+					ref_set_pref_dict['dec_var_values'] = dec_var_values
+					# Produce/save plots.
+					Scatter_Plot_Objectives(ref_set_pref_dict, objs_to_plot, plot_dict=plot_dict,
+											save_fig=output_location,
+											movie_dict=movie_dict)
+				else:
+					ref_set_pref_dict['ref_set_file_name'] = output_location + self.os_fold + Borg_dict[
+						'opt_output_filename']
+					ref_set_pref_dict['num_dec_vars'] = DPS_dict['n_vars']
+					ref_set_pref_dict['num_objs'] = Borg_dict['n_objs']
+					# Produce/save plots.
+					[ref_set_array, objective_values, dec_var_values] = Scatter_Plot_Objectives(ref_set_pref_dict,
+																								objs_to_plot,
+																								plot_dict=plot_dict,
+																								save_fig=output_location,
+																								movie_dict=movie_dict)
+
+		if Borg_dict['borg_type'] == 1:
+			bg.Configuration.stopMPI()  # stop parallel function evaluation process
+
+		return
 
 
 	def init_log(self, outdir):
@@ -244,6 +480,7 @@ class PySedSim():
 		c_handler.setLevel(log_level)
 		c_handler.setFormatter(log_format)
 		logger.addHandler(f_handler)
+
 
 	def cleanup(self):
 		"""Close log files."""
