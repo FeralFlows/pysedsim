@@ -15,18 +15,16 @@ with imported functions. This file contains no function definitions.
 
 # Imports
 from __future__ import division
-from pysedsim.data_processing.data_processing import Import_Simulation_Preferences
-from pysedsim.data_processing.data_processing import Determine_Num_Scenarios
-from pysedsim.data_processing.data_processing import Monte_Carlo_Import
-from pysedsim.data_processing.data_processing import Export_Simulation_Output
+from pysedsim.data_processing.data_processing import *
 from pysedsim.river_basin_elements.system_element_creation import Simulation_Network_Creation
 from pysedsim.simulation.pysedsim_main_simulation import SedSim_Main_Simulation
-import time  # for keeping track of model execution time
 from pysedsim.data_processing.performance import Performance
+from pysedsim.optimization.direct_policy_search import *
 import logging
 import os
 import sys
 import numpy as np
+import time  # for keeping track of model execution time
 
 class PySedSim():
 	'''
@@ -90,6 +88,7 @@ class PySedSim():
 		(2) PySedSim()
 		"""
 
+		self.start_time = time.time()  # Keep track of PySedSim model execution time
 		self.file_name = file_name
 		self.Simulation_mode = Simulation_mode
 		self.start_stop = start_stop
@@ -105,6 +104,7 @@ class PySedSim():
 		self.make_dir(self.main_output_file_dir)
 		# Initialize logging file
 		self.init_log(self.main_output_file_dir)
+		self.os_fold = Op_Sys_Folder_Operator()		
 
 
 	@staticmethod
@@ -114,7 +114,7 @@ class PySedSim():
 			os.makedirs(pth)
 
 
-	def execute_simulation(self, borg_dict=None, dps_dict=None, decision_vars=None):
+	def execute_simulation(self, borg_dict=None, dps_dict=None, decision_vars=None, sim_opt_log_detail = 0):
 		'''
 
 		:param borg_dict: an optimization dictionary. Defined automatically in the optimization_pysedsim.py module.
@@ -122,15 +122,23 @@ class PySedSim():
 		optimization model (e.g., Borg) in the form of a numpy array. Currently, the only thing this input can be used
 		for is to populate the parameters for a RBF-type reservoir operating policy.
 		:param dps_dict: dictionary defining direct policy search preferences
+		:param sim_opt_log_detail: level of detail in simulation logging during simulation=optimization run. 0=no
+		output, 1 = all output (for every function evaluation/simulation).
 		:return:
 		'''
+
+		if borg_dict is None:
+			logging.info("Executing a simulation experiment")
+		else:
+			if sim_opt_log_detail == 1:
+				logging.info("Executing a simulation embedded in a broader simulation-optimization experiment")
 
 		self.borg_dict = borg_dict
 		self.dps_dict = dps_dict
 		self.decision_vars = decision_vars
 
 		if self.borg_dict is not None:
-			# An optimization is being performed.
+			self.optimization = 1  # An optimization is being performed.
 			# is being performed.
 			opt_dict = self.borg_dict['opt_dict']
 			self.num_scenarios = 1
@@ -138,7 +146,7 @@ class PySedSim():
 			export_data = 'No'  # Do not dump output to .csv file in optimization setting.
 			export_data_scenario = 'No'  # Ensures export_data is 'No' for all scenarios being looped through.
 		else:
-			# Optimization will not take place.
+			self.optimization = 0  # Optimization will not take place.
 			opt_dict = None
 			if self.scenario_name is not None:
 				self.num_scenarios = 1
@@ -158,13 +166,15 @@ class PySedSim():
 
 		for i in range(self.num_scenarios):
 			# Initialize logging file
-			logging.info('Beginning scenario: ' + self.simulation_titles_list[i])
+			if (self.optimization == 0) or (sim_opt_log_detail == 1):
+				logging.info('Beginning scenario: ' + self.simulation_titles_list[i])
 			# In case looping through scenarios, re-initiate start_stop
 			if parallelize is None:
 				self.start_stop = None
 			if export_data_scenario is None:
 				export_data = None
-			self.start_time = time.time()  # Keep track of PySedSim model execution time
+			if self.optimization == 0:
+				self.scen_start_time = time.time()  # Keep track of PySedSim model execution time
 			simulation_title = self.simulation_titles_list[i]  # Feed in a string as the simulation title
 			monte_carlo_file = self.monte_carlo_file_list[i]
 			# Import simulation preferences from user-provided input file.
@@ -206,7 +216,9 @@ class PySedSim():
 																										   Output_Object_Dict, var_sub_list, element_export_list,
 																										   Sampled_Parameter_Dict,
 																										   Synthetic_Inflow_dataframe_name_LIST,
-																										   Synthetic_Inflows_dictionary, op_policy_params=self.dps_dict)
+																										   Synthetic_Inflows_dictionary,
+																										   op_policy_params=self.dps_dict,
+																										   optimization = self.optimization)
 
 			# Export output data if user indicates this should be conducted, or if pysedsim is being called as part of a
 			# re-evaluation process, in which case output is (assumed to be) desired to be stored.
@@ -215,13 +227,18 @@ class PySedSim():
 										 self.main_output_file_dir, simulation_title, var_sub_list, rank =
 										 self.parallel_label, policy_name=self.policy_name)
 
-		self.cleanup()
+			if self.optimization == 0:
+				logging.info("--- Simulation Experiment: {1} Complete in {0} minutes ---".format(
+					(time.time() - self.scen_start_time) / 60, self.simulation_titles_list[i]))
 
 		# If PySedSim() is connected to an external optimization model, evaluate performance over the realizations.
 		if opt_dict is not None:
-			objs = Performance(Time_Series_Output_Dictionary, Sim_Dur, opt_dict=opt_dict, sim_title = simulation_title)
+			objs = Performance(Time_Series_Output_Dictionary, Sim_Dur, opt_dict=opt_dict, sim_title=simulation_title,
+							   optimization=self.optimization)
 			return objs
 
+		if opt_dict is None:
+			self.cleanup()  # uncoupled simulation is over; close out log file
 
 	def PySedSim_Caller(self, vars, additional_inputs):
 		'''
@@ -245,7 +262,6 @@ class PySedSim():
 		DPS_Dict = additional_inputs[1]
 		top_level_input_file_name = additional_inputs[2]
 		borg_vars = vars
-		self.os_fold = Op_Sys_Folder_Operator()
 
 		# If any variables are discrete valued (e.g., integer), re-format borg variable values to reflect.
 		for v in range(len(DPS_Dict['variable_type'])):
@@ -261,11 +277,12 @@ class PySedSim():
 			# Use for stochastic simulation/optimization, particularly if being run in parallel.
 			op_policy_params = np.asarray(borg_vars)  # Cast borg output parameters as array for use in simulation.
 			performance = self.execute_simulation(borg_dict=Borg_dict, dps_dict=DPS_Dict,
-												  decision_vars=op_policy_params, file_name=top_level_input_file_name)
+												  decision_vars=op_policy_params)
 		return performance
 
 
-	def execute_optimization(self, file_name='PySedSim_Input_Specifications.csv'):
+	def execute_optimization(self, file_name='PySedSim_Input_Specifications.csv', borg_path = None,
+							 sim_opt_log_detail = 0):
 
 		'''
 
@@ -275,18 +292,25 @@ class PySedSim():
             file_name: Name of the top-level input file that indicates where input files are located, etc. Default is
             'PySedSim_Input_Specifications.csv'. Must be the same file used for the simulation that is to be connected to
             the optimization.
+            :param sim_opt_log_detail: level of detail to display in "log.txt" during execution. = minimal detail,
+            1=maximum detail. Note: Detailed output is always printed in the .runtime file for each
+            optimization seed.
 
         Returns:
             Produces pareto outputs for each seed, exported to separate files in a "sets" folder created in the model
             output location specified in the input file.
         '''
 
+		logging.info("Executing a coupled simulation-optimization experiment")
+
 		# Import borg wrapper given optimization is to be perfored
 		from pysedsim.optimization import borg as bg
 
 		# Loop through as many optimization scenarios as user has specified
 		for j in range(self.num_scenarios):
+			self.scen_start_time = time.time()
 			simulation_title = self.simulation_titles_list[j]
+			logging.info("Simulation-optimization experiment name: {0}".format(simulation_title))
 			Borg_dict = Import_Optimization_Preferences(simulation_title, self.imported_specs, self.main_input_files_dir)
 			if Borg_dict['optimization approach'] == 'DPS':
 				DPS_dict = Import_DPS_Preferences(simulation_title=simulation_title,
@@ -322,19 +346,25 @@ class PySedSim():
 			if not os.path.exists(output_location):
 				os.makedirs(output_location)
 
+			# Initialize Borg configuration, for purposes of specifying borg a path to Borg DLL/SO
+			bg.Configuration.initialize(borg_path=borg_path)  # 
+
 			# Set up interface with Borg for parallel function evaluation, if Borg Maser-Slave is being used, and if this
 			#  is the first optimization scenario being considered. Can't start MPI twice.
 			if Borg_dict['borg_type'] == 1 and j == 0:
 				bg.Configuration.startMPI()  # start parallelization with MPI
 
 			# Set up interface with Borg for optimization
-			for j in range(Borg_dict['nSeeds']):
-				borg = bg.Borg(Borg_dict['total_vars'], Borg_dict['n_objs'], Borg_dict['n_constrs'], PySedSim_Caller,
-							   add_pysedsim_inputs=[Borg_dict, DPS_dict, file_name])  # Create instance of Borg class
+			for sd in range(Borg_dict['nSeeds']):
+				logging.info("Running random seed: {0}".format(sd))
+				self.seed_start_time = time.time()
+				# Create instance of Borg class
+				borg = bg.Borg(Borg_dict['total_vars'], Borg_dict['n_objs'], Borg_dict['n_constrs'], self.PySedSim_Caller,
+							   add_pysedsim_inputs=[Borg_dict, DPS_dict, file_name])
 				borg.setBounds(*borg_variable_range)  # Set decision variable bounds
 				borg.setEpsilons(*Borg_dict['epsilon_list'])  # Set epsilon values
 				runtime_filename = self.main_output_file_dir + self.os_fold + simulation_title + self.os_fold + 'sets' + self.os_fold + \
-								   'runtime_file_seed_' + str(j + 1) + '.runtime'
+								   'runtime_file_seed_' + str(sd + 1) + '.runtime'
 				if Borg_dict['borg_type'] == 0:
 					# Run serial Borg
 					if Borg_dict['runtime_preferences']['runtime_choice'] == 'Yes':
@@ -355,10 +385,11 @@ class PySedSim():
 				if result:
 					# This particular seed is now finished being run in parallel. The result will only be returned from
 					# one node in case running Master-Slave Borg.
-					result.display()
+					if sim_opt_log_detail == 1:
+						result.display()
 
 					# Create/write objective values and decision variable values to files in folder "sets", 1 file per seed.
-					f = open(output_location + self.os_fold + 'Borg_DPS_PySedSim' + str(j + 1) + '.set', 'w')
+					f = open(output_location + self.os_fold + 'Borg_DPS_PySedSim' + str(sd + 1) + '.set', 'w')
 					f.write('#Borg Optimization Results\n')
 					f.write('#First ' + str(Borg_dict['total_vars']) + ' are the decision variables, ' + 'last ' + str(
 						Borg_dict['n_objs']) + ' are the ' + 'objective values\n')
@@ -378,7 +409,7 @@ class PySedSim():
 
 					# Create/write objective values only to files in folder "sets", 1 file per seed. Purpose is so that
 					# the file can be processed in MOEAFramework, where performance metrics may be evaluated across seeds.
-					f2 = open(output_location + self.os_fold + 'Borg_DPS_PySedSim_no_vars' + str(j + 1) + '.set', 'w')
+					f2 = open(output_location + self.os_fold + 'Borg_DPS_PySedSim_no_vars' + str(sd + 1) + '.set', 'w')
 					for solution in result:
 						line = ''
 						for i in range(len(solution.getObjectives())):
@@ -388,7 +419,8 @@ class PySedSim():
 					f2.write("#")
 					f2.close()
 
-					logging.info("Seed {0} complete".format(j))
+					logging.info(
+						"Seed {0} complete in {1} minutes".format(sd, ((time.time() - self.seed_start_time) / 60)))
 
 			# All seeds for this scenario are complete. Now generate reference set if user desires.
 			if Borg_dict['ref_set_yes_no'] == 'Yes':
@@ -449,10 +481,13 @@ class PySedSim():
 																								plot_dict=plot_dict,
 																								save_fig=output_location,
 																								movie_dict=movie_dict)
+			# Optimization Scenario complete.
+			logging.info("--- Simulation-Optimization Experiment: {1} Complete in {0} minutes ---".format((
+				(time.time() - self.scen_start_time) / 60), simulation_title))
 
 		if Borg_dict['borg_type'] == 1:
 			bg.Configuration.stopMPI()  # stop parallel function evaluation process
-
+		self.cleanup()  # close out log file
 		return
 
 
@@ -464,6 +499,9 @@ class PySedSim():
 		log_format = logging.Formatter('%(levelname)s: %(message)s')
 		log_level = logging.DEBUG
 		log_file = os.path.join(outdir, 'logfile.log')
+		# Delete previous logs; avoids merging outputs from multiple sessions  into a single log
+		if os.path.exists(log_file):
+			os.remove(log_file)
 
 		logger = logging.getLogger()
 		logger.setLevel(log_level)
@@ -483,7 +521,13 @@ class PySedSim():
 
 	def cleanup(self):
 		"""Close log files."""
-		logging.info("--- Simulation(s) Complete in {0} seconds ---".format(time.time() - self.start_time))
+		if self.optimization == 0:
+			logging.info("--- All Simulation Experiments Complete in {0} minutes ---".format((time.time() -
+																						 self.start_time)/60))
+		else:
+			logging.info("--- All Simulation-Optimization Experiments Complete in {0} minutes ---".format((time.time() -
+																						 self.start_time)/60))
+
 
 		# Remove logging handlers - they are initialized at the module level, so this prevents duplicate logs from
 		# being created if pysedsim is run multiple times.
