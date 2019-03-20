@@ -20,7 +20,8 @@ def SedSim_Main_Simulation(Num_Realizations, T, Input_Data_File, element_stochas
                            Flushing_Group_Dict, Stochastic_Sim, Parameter_Input_Dictionary, simulation_dates_no_leap,
                            Time_Series_Output_Dictionary, Sim_Dur, simulation_dates, Col_Names, Simulation_mode,
                            Output_Object_Dict, var_sub_list, element_export_list, Sampled_Parameter_Dict,
-                           Synthetic_Inflow_dataframe_name_LIST, Synthetic_Inflows_dictionary, op_policy_params=None):
+                           Synthetic_Inflow_dataframe_name_LIST, Synthetic_Inflows_dictionary, op_policy_params=None,
+                           optimization=0):
 
     # Inputs:
     # Notes: All inputs are generated automatically in the main top-level pysedsim.py file through various function calls there.
@@ -305,6 +306,8 @@ def SedSim_Main_Simulation(Num_Realizations, T, Input_Data_File, element_stochas
             if Simulation_mode == 'debug':
                 Output_Object_Dict[rz][element] = SystemObjects[element]
 
-        logging.info("Simulation Realization {0} Complete.".format((rz+1)))
+        if optimization == 0:
+            # Only print info for each simulation if not operating in coupled simulation-optimization mode
+            logging.info("Simulation Realization {0} Complete.".format((rz+1)))
 
     return state_list_excel, Time_Series_Output_Dictionary, Output_Object_Dict
