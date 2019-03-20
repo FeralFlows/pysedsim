@@ -56,10 +56,10 @@ class Configuration:
             raise OSError("The Borg MOEA C library is not defined, please see Configuration.setBorgLibrary(<file>)")
 
     @staticmethod
-    def initialize():
+    def initialize(borg_path = None):
         """ Initializes the standard C and Borg MOEA libraries. """
         Configuration.setStandardCLibrary()
-        Configuration.setBorgLibrary()
+        Configuration.setBorgLibrary(path = borg_path)
         Configuration.seed()
         Configuration.startedMPI = False
 
@@ -270,7 +270,7 @@ class Borg:
     """ Solves an optimization problem using the Borg MOEA. """
 
     def __init__(self, numberOfVariables, numberOfObjectives, numberOfConstraints, function, epsilons=None,
-                 bounds=None, directions=None, add_pysedsim_inputs=None):
+                 bounds=None, directions=None, add_pysedsim_inputs=None, borg_path=None):
         """ Creates a new instance of the Borg MOEA.
 
         numberOfVariables   - The number of decision variables in the optimization problem
@@ -282,6 +282,7 @@ class Borg:
         directions          - The optimization direction (MINIMIZE or MAXIMIZE) for each objective
         """
 
+        Configuration.setBorgLibrary(path=borg_path)
         # Ensure the underlying library is available
         Configuration.check()
 
@@ -836,4 +837,4 @@ class Constraint:
         """ Requres at least one condition to be satisfied. """
         return 0.0 if 0.0 in args else sum(args)
 
-Configuration.initialize()
+#Configuration.initialize()
