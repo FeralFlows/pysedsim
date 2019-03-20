@@ -23,7 +23,7 @@ from pysedsim.sediment_management.density_current_venting import Density_Current
 # from bypassing import Bypassing
 from datetime import datetime  # Used to work with date objects (especially date arithmetic)
 from datetime import timedelta  # Used to add days/months/years to a datetime object
-import pysedsim.optimization.direct_policy_search
+from pysedsim.optimization.direct_policy_search import *
 import logging
 
 class Reservoir(Storage_Element):
@@ -293,7 +293,7 @@ class Reservoir(Storage_Element):
                     # operating policy parameters to be read in from a text file rather than fed in directly.
                     try:
                         # Load all relevant user specifications from DPS worksheet
-                        self.op_policy_params = direct_policy_search.Import_DPS_Preferences(input_data_file=Input_Data_File)
+                        self.op_policy_params = Import_DPS_Preferences(input_data_file=Input_Data_File)
                         self.op_policy_params['Policy Function'] = {'Raw Parameters': np.loadtxt('RBF_Parameters.txt')}
                     except KeyError:
                         logging.critical("Required Worksheet 'DPS' does not exist in input file.")
@@ -301,7 +301,7 @@ class Reservoir(Storage_Element):
                     self.op_policy_params = op_policy_params
                 # Initialize DPS-relevant arrays
                 # Update DPS dictionary to store C, R, and W for policy function.
-                self.op_policy_params = direct_policy_search.Create_DPS_Policy(self.op_policy_params)
+                self.op_policy_params = Create_DPS_Policy(self.op_policy_params)
                 self.DPS_inputs = np.zeros(self.op_policy_params['num_inputs'])  # Stores daily inputs to DPS policy
                 self.DPS_Decision = np.zeros(T+1)
             elif self.Reservoir_Operations_Goal == "Meet specified daily water elevation (mamsl) targets - annually recurring":
@@ -897,7 +897,7 @@ class Reservoir(Storage_Element):
 
         # Temporarily set either (1) flow release, (2) target elevation, or (3) target water level. Convert to
         # elevation or storage target depending on decision type. Constraints may require reset.
-        u = direct_policy_search.DPS_Policy_Decision(self.DPS_inputs, self.op_policy_params)  # Release decision
+        u = DPS_Policy_Decision(self.DPS_inputs, self.op_policy_params)  # Release decision
         self.DPS_Decision[t] = u[0]
         try:
             # Current valid entries for output variables: Storage_Target_Release_Goal, ELEVATION_TARGET, STORAGE_TARGET
