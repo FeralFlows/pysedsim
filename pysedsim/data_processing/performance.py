@@ -10,7 +10,8 @@ import pandas as pd
 import copy
 import logging
 
-def Performance(output_dict, Sim_Dur, opt_dict=None, main_output_file_dir=None, sim_title=None):
+def Performance(output_dict, Sim_Dur, opt_dict=None, main_output_file_dir=None, sim_title=None, optimization=0,
+                sim_opt_log_detail = 0):
     '''
 
     Purpose: Evaluates the performance of specified system elements in a particular PySedSim system configuration.
@@ -27,7 +28,9 @@ def Performance(output_dict, Sim_Dur, opt_dict=None, main_output_file_dir=None, 
     :return: objs (a list of objective function values)
     '''
 
-    logging.info('Evaluating simulated performance across system elements')
+    if (optimization == 0) or (sim_opt_log_detail == 1):
+        # Only log info about each performance evaluation if not operating in coupled simulation-optimization mode
+        logging.info('Evaluating simulated performance across system elements')
 
     # If this function is being used as part of an optimization routine, unpack optimization preferences/parameters.
     if opt_dict is not None:
