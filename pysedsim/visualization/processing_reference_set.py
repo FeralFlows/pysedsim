@@ -10,27 +10,36 @@ objective values and the decision variable values), plots objective value space,
 and produces text files that store particular operating policies of interest.
 
 '''
+
+# Import statements
 from __future__ import division
+from pysedsim.data_processing.data_processing import *
+from pysedsim.data_processing.performance import Performance
+import pysedsim.optimization.direct_policy_search
+from pysedsim.visualization.pysedsim_plotting import Probability_Plot
+from pysedsim.model import *
+import pareto
 import numpy as np
 import matplotlib
 import matplotlib.cm as cm
-#matplotlib.use('Agg')
+from matplotlib.backends import backend_agg as agg  # raster backend
 from matplotlib import pyplot
 from mpl_toolkits.mplot3d import Axes3D
-#import pylab as p
 from matplotlib import rc, rcParams
 #from movie_pareto_front import rotanimate
 import subprocess  # for calling Pareto.py command-line style
 import platform
 import os
 import shutil  # for copying Pareto.py over to directory where seed outputs from optimization are located.
-from pysedsim.data_processing.data_processing import Op_Sys_Folder_Operator
-from pysedsim.data_processing.data_processing import Determine_Num_Scenarios
-import pysedsim.optimization.direct_policy_search
+import pandas as pd
+from copy import deepcopy	
 import itertools
-from pysedsim.data_processing.data_processing import Load_Input_File
 import matplotlib.patheffects as pe
 import logging
+import sys
+if platform.system() == 'Linux':
+    from mpi4py import MPI  # Use MPI4PY to parallelize the policy re-evaluations
+
 
 def Reference_Set(input_file_name = 'PySedSim_Input_Specifications.csv', ref_set_file_name = 'pysedsim_ref_set',
                   file_type = '.ref', objs_to_process = None, inline_optimization = None, eval_runtime_perf='No',
@@ -113,8 +122,6 @@ def Reference_Set(input_file_name = 'PySedSim_Input_Specifications.csv', ref_set
             :returns Borg_dict, DPS_dict
     '''
 
-    from optimization_pysedsim import Import_Optimization_Preferences
-
     # Load basic information about the simulated scenarios, including input file directory and simulation names.
     os_fold = Op_Sys_Folder_Operator()
     ref_set_file_name_FINAL = ref_set_file_name + file_type
@@ -136,7 +143,7 @@ def Reference_Set(input_file_name = 'PySedSim_Input_Specifications.csv', ref_set
             Borg_dict = Import_Optimization_Preferences(simulation_title, imported_specs, main_input_files_dir)
             Borg_dict['opt_output_filename'] = ref_set_file_name_FINAL
             if Borg_dict['optimization approach'] == 'DPS':
-                DPS_dict = direct_policy_search.Import_DPS_Preferences(simulation_title=simulation_title,
+                DPS_dict = pysedsim.optimization.direct_policy_search.Import_DPS_Preferences(simulation_title=simulation_title,
                                                                        imported_specs=imported_specs,
                                                                        main_input_files_dir=main_input_files_dir)
         else:
@@ -160,11 +167,12 @@ def Reference_Set(input_file_name = 'PySedSim_Input_Specifications.csv', ref_set
             # regular reference set is being generated or just thinning needs to occur.
 
             # Change to sets directory, and create the reference set.
-            global sorting_file
+            #global sorting_file
             sorting_file = "Pareto.py"
-            shutil.copy(sorting_file, output_location)  # Place a copy of Pareto.py temporarily in seed directory
+            #shutil.copy(sorting_file, output_location)  # Place a copy of Pareto.py temporarily in seed directory
             cwd = os.getcwd()  # Current working directory to return to after changing directories.
-            os.chdir(output_location)
+            print(cwd)
+			#os.chdir(output_location)
 
             # If reference set is being thinned, and user wishes to maintain the highest and lowest values from the
             # reference set in doing this, then store those values now, so they can be inserted later.
@@ -196,46 +204,66 @@ def Reference_Set(input_file_name = 'PySedSim_Input_Specifications.csv', ref_set
                     obj_range += str(num_dec_vars + int(objs_to_process[i])) + " "
                     epsilon_strings += str(epsilon_list[int(objs_to_process[i])]) + " "
 
+            if os.path.isabs(output_location) is False:
+                out_loc = os.path.join(cwd, output_location)
+            else:
+                out_loc = output_location
+
             if create_ref_set == 'Yes':
-                file_to_sort = 'Borg_DPS_PySedSim*.set'
-                file_to_produce_1 = ref_set_file_name_FINAL
-                file_to_produce_2 = ref_set_file_name_no_vars
+                file_to_sort = os.path.join(out_loc, 'Borg_DPS_PySedSim*.set')
+                file_to_produce_1 = os.path.join(out_loc, ref_set_file_name_FINAL)
+                file_to_produce_2 = os.path.join(out_loc, ref_set_file_name_no_vars)
             elif thin_ref_set == 'Yes':
-                file_to_sort = ref_set_file_name_FINAL
-                file_to_produce_1 = thinned_ref_set_file_name + file_type
-                file_to_produce_2 = thinned_ref_set_file_name + '_no_vars' + file_type
+                file_to_sort = os.path.join(out_loc, ref_set_file_name_FINAL)
+                file_to_produce_1 = os.path.join(out_loc, thinned_ref_set_file_name + file_type)
+                file_to_produce_2 = os.path.join(out_loc, thinned_ref_set_file_name + '_no_vars' + file_type)
 
             if platform.system() == 'Linux':
                 cmd_line_string_1 = "python Pareto.py " + file_to_sort + " -o " + obj_range + " -e " + epsilon_strings \
-                                    + "--output " + file_to_produce_1 + " --delimiter=\" \" --comment=\"#\" --blank"
+                                    + "--output " + file_to_produce_1 + "--comment=\"#\" --blank"
                 cmd_line_string_2 = "python Pareto.py " + file_to_sort + " -o " + obj_range + " -e " + epsilon_strings \
-                                    + "--output " + file_to_produce_2 + " --delimiter=\" \" --comment=\"#\" " \
-                                                                                "--blank" + " --print-only-objectives"
-                subprocess.call(cmd_line_string_1, shell=True)
-                subprocess.call(cmd_line_string_2, shell=True)
+                                    + "--output " + file_to_produce_2 + "--comment=\"#\" --blank" + " --print-only-objectives"
+
+                delim_arg = "--delimiter=\" \""
+                cmd_combined_1 = cmd_line_string_1.split(' ')[1:]
+                cmd_combined_1.append(delim_arg)
+                cmd_combined_2 = cmd_line_string_2.split(' ')[1:]
+                cmd_combined_2.append(delim_arg)
+                pareto.cli(pareto.get_args(cmd_combined_1))
+                pareto.cli(pareto.get_args(cmd_combined_2))
+                #subprocess.call(cmd_line_string_1, shell=True)
+                #s#ubprocess.call(cmd_line_string_2, shell=True)
                 #subprocess.call("echo " + "\"#\" " + ">> " + ref_set_file_name_no_vars)  # Add # to EoL
-                subprocess.call("rm " + sorting_file, shell=True)  # Remove the temporary Pareto.py
+                #subprocess.call("rm " + sorting_file, shell=True)  # Remove the temporary Pareto.py
             elif platform.system() == 'Windows':
                 # get list of files names
                 file_list = []  # Initialize
                 if create_ref_set == 'Yes':
                     # Only add seed file to the list of files to process if the file actually exists.
                     for i in range(Borg_dict['nSeeds']):
-                        if os.path.isfile('Borg_DPS_PySedSim' + str(i+1) + '.set'):
-                            file_list.append(' Borg_DPS_PySedSim' + str(i+1) + '.set')
+                        if os.path.isfile(os.path.join(out_loc, 'Borg_DPS_PySedSim' + str(i+1) + '.set')):
+                            file_list.append(' ' + os.path.join(out_loc, 'Borg_DPS_PySedSim' + str(i+1) +
+                                                                '.set'))
                     file_list_string = ''.join(file_list)
                 elif thin_ref_set == 'Yes':
                     file_list_string = ' ' + file_to_sort
                 #file_list = [' Borg_DPS_PySedSim' + str(i+1) + '.set' for i in range(Borg_dict['nSeeds'])]
 
                 cmd_line_string_1 = "python Pareto.py" + file_list_string + " -o " + obj_range + " -e " + epsilon_strings \
-                                   + "--output " + file_to_produce_1 + " --delimiter=\" \" --comment=\"#\" --blank"
-                subprocess.call(cmd_line_string_1, shell=True)
-                cmd_line_string_2 = "python Pareto.py" + file_list_string + " -o " + obj_range + " -e " + epsilon_strings\
-                                    + "--output " + file_to_produce_2 + " --delimiter=\" \" --comment=\"#\" " \
-                                                                                "--blank" + " --print-only-objectives"
-                subprocess.call(cmd_line_string_2, shell=True)
-                subprocess.call("del " + sorting_file, shell=True)  # Remove the temporary Pareto.py
+                                   + "--output " + file_to_produce_1 + " --comment=\"#\" --blank"
+                #subprocess.call(cmd_line_string_1, shell=True)
+                cmd_line_string_2 = "python Pareto.py" + file_list_string + " -o " + obj_range + " -e " + \
+                                    epsilon_strings + "--output " + file_to_produce_2 + " --comment=\"#\" " + \
+                                    "--blank" + " --print-only-objectives"
+                #subprocess.call(cmd_line_string_2, shell=True)
+
+                delim_arg = "--delimiter=\" \""
+                cmd_combined_1 = cmd_line_string_1.split(' ')[1:]
+                cmd_combined_1.append(delim_arg)
+                cmd_combined_2 = cmd_line_string_2.split(' ')[1:]
+                cmd_combined_2.append(delim_arg)
+                pareto.cli(pareto.get_args(cmd_combined_1))
+                pareto.cli(pareto.get_args(cmd_combined_2))
 
             # Open both of the created files (one with and without objectives) and place a # at the end of the file.
             # This signifies end of file, and is compatible with requirements for processing of outputs in
@@ -257,7 +285,7 @@ def Reference_Set(input_file_name = 'PySedSim_Input_Specifications.csv', ref_set
                     ref_file.write("#")  # Add hashtag
                     ref_file.close()  # Close file to free up memory
 
-            os.chdir(cwd)  # Return to original directory
+            #os.chdir(cwd)  # Return to original directory
 
         # Evaluate runtime performance (across seeds) of reference set, if user desires.
         if eval_runtime_perf == 'Yes':
@@ -409,14 +437,7 @@ def Policy_Reevaluation(ref_set_file='pysedsim_ref_set.ref', ref_set_file_no_var
     all policies from the pareto set must already have been reevaluated and results stored.
 
     '''
-
-    # Imports
-    from optimization_pysedsim import Import_Optimization_Preferences
-    from pysedsim import PySedSim
-    from data_processing import Import_Simulation_Output
-    from pysedsim_plotting import Probability_Plot
-    from cluster_output_parser import aggregate_sim_outputs
-    from performance import Performance
+	
 
     os_fold = Op_Sys_Folder_Operator()
 
@@ -514,7 +535,7 @@ def Policy_Reevaluation(ref_set_file='pysedsim_ref_set.ref', ref_set_file_no_var
             internal_opt_call = [simulation_title]  # Feed into pysedsim, so scenario looping doesnt also happen there.
             borg_dict = Import_Optimization_Preferences(simulation_title, imported_specs, main_input_files_dir)
             if borg_dict['optimization approach'] == 'DPS':
-                dps_dict = direct_policy_search.Import_DPS_Preferences(simulation_title=simulation_title,
+                dps_dict = pysedsim.optimization.direct_policy_search.Import_DPS_Preferences(simulation_title=simulation_title,
                                                                        imported_specs=imported_specs,
                                                                        main_input_files_dir=main_input_files_dir)
                 borg_dict['total_vars'] = dps_dict['total_vars']  # Store num decision variables in Borg_dict.
@@ -595,16 +616,20 @@ def Policy_Reevaluation(ref_set_file='pysedsim_ref_set.ref', ref_set_file_no_var
         if reevaluation == 'Yes':
             for i in policy_list:
                 if parallelize_policies == 'Yes':
-                    PySedSim(file_name = file_name, dps_dict = dps_dict, decision_vars=dec_var_values[i],
+                    pys = PySedSim(file_name = file_name,
                              scenario_name=internal_opt_call, re_eval=re_eval_dict, policy_name=i)
+                    pys.execute_simulation(dps_dict = dps_dict, decision_vars=dec_var_values[i])
                 elif parallelize_realizations == 'Yes':
-                    PySedSim(file_name = file_name, parallel_label = rank, start_stop = [start, stop], dps_dict = dps_dict,
-                             decision_vars=dec_var_values[i], scenario_name=internal_opt_call, re_eval=re_eval_dict,
-                             policy_name=i)
+                    pys = PySedSim(file_name=file_name, parallel_label=rank, start_stop=[start, stop],
+                                   scenario_name=internal_opt_call, re_eval=re_eval_dict, policy_name=i)
+                    pys.execute_simulation(dps_dict = dps_dict, decision_vars=dec_var_values[i])
+
                 else:
                     # No parallelization is taking place
-                    PySedSim(file_name = file_name, dps_dict = dps_dict, decision_vars=dec_var_values[i],
-                             scenario_name=internal_opt_call, re_eval=re_eval_dict, policy_name=i)
+                    pys = PySedSim(file_name = file_name, scenario_name=internal_opt_call, re_eval=re_eval_dict,
+                                   policy_name=i)
+                    pys.execute_simulation(dps_dict = dps_dict, decision_vars=dec_var_values[i])
+
 
         ref_set_dict[simulation_title] = {'ref_set_array': ref_set_array, 'objective_values': objective_values,
                                           'dec_var_values': dec_var_values, 'num_dec_vars': num_dec_vars,
@@ -818,8 +843,6 @@ def ref_set_plot_loop(parallel = 'No', file_name = None):
     locations.
     :return:
     '''
-    from optimization_pysedsim import Import_Optimization_Preferences
-    from direct_policy_search import Import_DPS_Preferences
 
     [num_scenarios, simulation_titles_list, imported_specs, main_input_files_dir, main_output_file_dir,
      os_fold] = import_specs(file_name=file_name)
@@ -832,7 +855,7 @@ def ref_set_plot_loop(parallel = 'No', file_name = None):
         output_location = main_output_file_dir + os_fold + simulation_title + os_fold + 'sets'
         Borg_dict = Import_Optimization_Preferences(simulation_title, imported_specs, main_input_files_dir)
         if Borg_dict['optimization approach'] == 'DPS':
-            DPS_dict = Import_DPS_Preferences(simulation_title=simulation_title, imported_specs=imported_specs,
+            DPS_dict = pysedsim.optimization.direct_policy_search.Import_DPS_Preferences(simulation_title=simulation_title, imported_specs=imported_specs,
                                               main_input_files_dir=main_input_files_dir)
             Borg_dict['n_vars'] = DPS_dict['total_vars']  # Store num decision variables in Borg_dict, copied from
             # DPS_dict.
@@ -905,9 +928,7 @@ def parallelize_pysedsim(n_evaluations, comm=None):
     Note: if start, stop = 3,4, only one evaluation will actually be performed, not two.
     '''
 
-    # Use MPI4PY to parallelize the policy re-evaluations
-    from mpi4py import MPI
-
+	
     if comm is None:
         # Initialize MPI environment.
         comm = MPI.COMM_WORLD
@@ -2739,7 +2760,6 @@ def tradeoff_plotting_parallel_axis(input_file_name = 'PySedSim_Input_Specificat
 
 def parallel_axis_plot(ref_set_pref_dict, plot_dict = None, parse_objs = None, objs_to_plot = None, plot_name=None):
     #import seaborn.apionly as sns
-    from copy import deepcopy
 
     # Load basic information about the simulated scenarios, including input file directory and simulation names.
     os_fold = Op_Sys_Folder_Operator()
@@ -2887,10 +2907,7 @@ def parallel_axis_plot(ref_set_pref_dict, plot_dict = None, parse_objs = None, o
 def create_par_axis_plot(formulations, labels, labels_orig, precision, cmaps, plot_name, plot_dict, ref_set_pref_dict,
                          num_axes, titles=None):
 
-    # Imports
-    from matplotlib.backends import backend_agg as agg  # raster backend
-    import pandas as pd
-
+						 
     fig = matplotlib.figure.Figure()  # create the figure
     agg.FigureCanvasAgg(fig)         # attach the rasterizer
     ax = fig.add_subplot(1, 1, 1)    # make axes to plot on

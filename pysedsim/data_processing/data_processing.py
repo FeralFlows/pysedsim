@@ -12,7 +12,6 @@ Contains numerous functions to do this.
 from __future__ import division
 from openpyxl import load_workbook  # Purpose: load excel workbooks
 from datetime import timedelta
-from datetime import datetime
 from openpyxl import Workbook
 import pandas as pd
 import os  # allows export of csv file by joining intended file name with the destination folder's path.
@@ -20,8 +19,10 @@ import calendar  # for using the .isleap function to determine whether current y
 import numpy as np
 import platform  # Purpose: tells you whether your computer/cluster is windows or linux.
 import csv
-import itertools
 import logging
+import time
+if platform.system() == 'Linux':
+    from mpi4py import MPI  # Use MPI4PY to parallelize the policy re-evaluations
 
 def Determine_Num_Scenarios(file_name='PySedSim_Input_Specifications.csv'):
     '''
@@ -1687,6 +1688,124 @@ def Import_Optimization_Preferences(simulation_title, imported_specs, main_input
     }
 
     return Borg_dict
+
+
+def aggregate_sim_outputs(file_name='PySedSim_Input_Specifications.csv', var_sub_list=None,
+                          Locations_to_Import=None, policies=None, num_reeval_procs=None):
+
+    '''
+    Purpose: loads all assumptions relevant to the simulation that has been completed.
+
+    This module loads PySedSim simulation output files produced by a cluster and imports them into a single data
+    structure.
+
+    This module is intended to be used to aggregate PySedSim output data files that have been produced by a cluster into
+    single files (one file, e.g. .csv file, for every variable at every location). The module contains a call to the
+    aggregate_sim_outputs() function, which determines what elements and associated state variable time series are to be
+    imported using the imported function cluster_output_processing(). It is assumed this file will be called from a
+    Linux terminal with mpi4py used to conduct this data aggregation and single file creation process in parallel by
+    distributing the task of creating a given file, or set of files, to separate processors. If not running this
+    file from a shell script on a cluster, you should only run this module on a computer capable of parallelizing with
+    mpi4py.
+
+    Loads all data relevant/required for importing the time series output from system
+    elements/variables, and then calls the imported function cluster_output_processing() do actually do this
+    processing.
+
+    Inputs:
+
+    file_name = full name of file that stores information regarding where the
+    simulation outputs are stored. A file with name = file_name must be stored in the same directory as the
+    location of this module. Default assumed name of this file: 'PySedSim_Input_Specifications.csv'
+
+    var_sub_list: list of variables to be imported
+
+    Locations_to_Import: Dictionary of scenario names and locations to be imported
+
+    :param policies: Optional. List of integers corresponding to row numbers of policies in the array of decision
+    variable values imported from the reference set (dec_var_values, as shown below). Example: [19,3, 332]. List
+    should be nested if multiple scenarios are being simulated. Example: [[4,232,1], [4, 23, 2323, 532]]
+
+    :num_reeval_procs: Optional. Integer. Indicates number of processors that were used to produce simulation output,
+    which is used here to specify how many output files to search for for each variable/location.
+
+    '''
+
+    start_time = time.time()  # Keep track of PySedSim model execution time
+
+    # Initialize MPI environment
+    comm = MPI.COMM_WORLD
+
+    # Get the number of processors and the rank of processors
+    n_procs = comm.size  # Number of processors (e.g., 512)
+    rank = comm.rank  # Rank of individual processor from 0 to (nprocs-1) (e.g., 0, 1, 2, ..., 511)
+
+    # Get operator for changing directory based on operating system.
+    os_folder_operator = Op_Sys_Folder_Operator()
+
+    cluster_sub_folder = 'cluster_output'
+
+    # Determine basic information about the simulation that was conducted in parallel (name, names of elements and
+    # variables simulated, and location of files).
+    [num_scenarios, simulation_titles_list, imported_specs, main_input_files_dir,
+     main_output_file_dir ,Monte_Carlo_Parameters_File_List, external_mc_data] = Determine_Num_Scenarios(file_name)
+
+    for j in range(num_scenarios):
+        # Read through the output folder names so that we can generate a list of system elements (allowing us to
+        # allocate the proper number of processors for grabbing files produced for each location and variable.
+        simulation_title = simulation_titles_list[j]
+        if Locations_to_Import is None:
+            # User has not specified Location_to_Import
+            main_output_file_sub_folder = imported_specs[4] + os_folder_operator + simulation_title + os_folder_operator \
+                                          + cluster_sub_folder
+            Locations_to_Import = {simulation_title: [x[1] for x in os.walk(main_output_file_sub_folder)][
+                0]}  # key: sim title; items: list of elem
+
+        if var_sub_list is None:
+            # User has not specified var_sub_list
+            Input_Data_File = Load_Input_File(simulation_title, main_input_files_dir, imported_specs,
+                                              os_folder_operator=os_folder_operator)
+
+            # Time series state variables to be imported.
+            [var_sub_list, element_export_list, export_data] = Export_Preferences(Input_Data_File)
+
+        # Make a list of system location-variable combinations. Each processor will be grabbing the output from a
+        # separate processor produced by each simulation.
+        loc_var_list = []
+        for locs in Locations_to_Import[simulation_title]:
+            for vars in var_sub_list:
+                loc_var_list.append([locs, vars])
+
+        # Use the processor rank to determine the chunk of work each processor will do. If a remainder exists,
+        # some processors will be required to do extra simulations.
+        number_of_imports = len(loc_var_list)  # Total number of element-variable combinations to be handled.
+        count = number_of_imports/n_procs  # Integer number of data imports/aggregations to be executed per processor.
+        remainder = number_of_imports % n_procs
+        if rank < remainder:
+            start = rank*(count+1)
+            stop = start+count+1
+        else:
+            start = count*rank + remainder
+            stop = start+count
+
+        var_list_master = ['0']  # Usually will contain one variable. May contain more than 1 if more elems in
+        # loc_var_list than n_procs available.
+        Locations_to_Import_master = {simulation_title: ['0']}
+        #print loc_var_list
+        #print Locations_to_Import_master
+        #print main_output_file_dir
+        #print policies
+        for i in range(start, stop):
+            var_list_master[0] = loc_var_list[i][1]  # Store variable combination(s) to feed into cluster_processing file
+            Locations_to_Import_master[simulation_title][0] = loc_var_list[i][0]
+            #print Locations_to_Import_master
+            # Call function to import distributed .csv files for a given set of locations/variables, import it,
+            # and dump resulting aggregate into .csv file(s).
+            Time_Series_Import_Dictionary = cluster_output_processing(num_reeval_procs, var_list_master, simulation_title,
+                                                                      Locations_to_Import_master,
+                                                                      main_output_file_dir, policies=policies)
+    print("--- Processor data import/export complete in %s seconds ---" % (time.time() - start_time))
+    return Time_Series_Import_Dictionary
 
 
 def Op_Sys_Folder_Operator():

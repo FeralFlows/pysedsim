@@ -1,7 +1,7 @@
 import numpy as np
 from pysedsim.data_processing.data_processing import Load_Input_File
 from pysedsim.data_processing.data_processing import Excel_Data_Import
-from pysedsim.visualization.processing_reference_set import *
+from pysedsim.visualization.processing_reference_set import Initial_Processing
 import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib.backends import backend_agg as agg
@@ -199,7 +199,7 @@ def Import_DPS_Preferences(simulation_title=None, imported_specs=None, main_inpu
                                                                                            simulation_title))
 
     # Read in preferences related to optimization of reservoir sediment flushing.
-    element_name = 'Sambor SA'
+    element_name = 'Sambor EA'
     flushing_dict = {}
     n_flush_vars = 0
     if 'Flushing' in Input_Data_File.sheetnames:
