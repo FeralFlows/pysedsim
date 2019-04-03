@@ -14,9 +14,6 @@ from matplotlib import pyplot
 import copy
 import matplotlib.lines as mlines
 
-def run_simulations_formulation_I():
-    # Run deterministic and stochastic simulations of rule curves 1, 2, 3 and 4
-    pysedsim.PySedSim(file_name = 'formulation_1.csv')  # Combines deterministic and stochastic simulations
 
 # Import reference set files from formulation 2, so that the same color scheme and objective can be used for the
 # colors of the rule curves from formulation 1.
