@@ -75,7 +75,7 @@ We refer you to the user manual in this repository's /docs directory for images 
 
 <strong> Peer-reviewed Publications: </strong>
 
-Wild, T.B., Reed, P.M., Loucks, D.P., Mallen-Cooper, M., Jensen, E.D. (2018). Balancing Hydropower and Ecological Impacts in the Mekong: Tradeoffs for Sambor Mega Dam. J. Water Resour. Plann. Manage. DOI: 10.1061/(ASCE)WR.1943-5452.0001036.
+Wild, T.B., Reed, P.M., Loucks, D.P., Mallen-Cooper, M., Jensen, E.D. (2019). Balancing Hydropower and Ecological Impacts in the Mekong: Tradeoffs for Sambor Mega Dam. J. Water Resour. Plann. Manage. DOI: 10.1061/(ASCE)WR.1943-5452.0001036.
 
 <strong> Presentations: </strong>
 
